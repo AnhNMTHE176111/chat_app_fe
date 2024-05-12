@@ -9,7 +9,7 @@ export const EmailInput: React.FC<InputProps> = ({ ...otherProps }) => {
       fullWidth
       variant="outlined"
       size="small"
-      label="Email"
+      label="Email *"
       type="email"
       id="outlined-start-adornment"
       sx={{ my: 1.5 }}

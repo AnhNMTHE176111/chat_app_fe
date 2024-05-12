@@ -9,7 +9,7 @@ export const PasswordInput: React.FC<InputProps> = ({ ...otherProps }) => {
       fullWidth
       variant="outlined"
       size="small"
-      label="Password"
+      label="Password *"
       type="password"
       id="outlined-start-adornment"
       sx={{ my: 1.5 }}

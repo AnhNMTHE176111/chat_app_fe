@@ -9,7 +9,7 @@ export const UsernameInput: React.FC<InputProps> = ({ ...otherProps }) => {
       fullWidth
       variant="outlined"
       size="small"
-      label="Username"
+      label="Username *"
       id="outlined-start-adornment"
       sx={{ my: 1.5 }}
       InputProps={{

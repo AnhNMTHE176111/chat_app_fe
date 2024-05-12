@@ -1,10 +1,10 @@
 import React from "react";
 import { AuthLayout } from "../../layouts";
 import { Container, Typography, Button, Divider } from "@mui/material";
-import { EmailInput, GoogleSignButton } from "../../components";
+import { PasswordInput, EmailInput, GoogleSignButton } from "../../components";
 import { NavLink } from "react-router-dom";
 
-export const ForgotPasswordPage = () => {
+export const ResetPasswordPage = () => {
   return (
     <AuthLayout>
       <Container
@@ -13,7 +13,7 @@ export const ForgotPasswordPage = () => {
       >
         <Container>
           <Typography align="left" variant="h6">
-            Forgot Password
+            Reset Password
           </Typography>
           <Typography
             align="left"
@@ -21,15 +21,16 @@ export const ForgotPasswordPage = () => {
             color={"gray"}
             gutterBottom
           >
-            Forgot your password? Do not worry! Please provide us with the email
-            you used to register for a Chat App account. We will send you a link
-            to reset your password via that email.
+            Almost done, change your password to complete. You should keep a
+            strong password to prevent unauthorized access to your account.
           </Typography>
 
           <EmailInput />
+          <PasswordInput label="New Password *" />
+          <PasswordInput label="Confirmation New Password *" />
 
           <Button variant="contained" fullWidth sx={{ my: 1.5 }}>
-            Send Email to Me
+            Change Password
           </Button>
           <Typography
             align="center"
@@ -61,4 +62,4 @@ export const ForgotPasswordPage = () => {
   );
 };
 
-export default ForgotPasswordPage;
+export default ResetPasswordPage;

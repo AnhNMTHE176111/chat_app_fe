@@ -1,9 +1,13 @@
 import React from "react";
 import { AuthLayout } from "../../layouts";
 import { Container, Typography, Button, Divider } from "@mui/material";
-import { PasswordInput, UsernameInput, EmailInput } from "../../components";
+import {
+  PasswordInput,
+  UsernameInput,
+  EmailInput,
+  GoogleSignButton,
+} from "../../components";
 import { NavLink } from "react-router-dom";
-import { Google } from "@mui/icons-material";
 
 export const RegisterPage: React.FC = () => {
   return (
@@ -21,12 +25,15 @@ export const RegisterPage: React.FC = () => {
           Get your Chat App account now.
         </Typography>
       </Container>
-      <Container style={{ backgroundColor: "#fff", padding: 14 }} maxWidth="xs">
+      <Container
+        sx={{ backgroundColor: "#fff", padding: 3, boxShadow: 4 }}
+        maxWidth="xs"
+      >
         <Container>
           <EmailInput />
           <UsernameInput />
           <PasswordInput />
-          <PasswordInput label="Confirmation Password" />
+          <PasswordInput label="Confirmation Password *" />
 
           <Button variant="contained" fullWidth sx={{ my: 1.5 }}>
             Register
@@ -51,15 +58,7 @@ export const RegisterPage: React.FC = () => {
           </Typography>
         </Divider>
         <Container>
-          <Button
-            variant="outlined"
-            fullWidth
-            color="primary"
-            sx={{ my: 1.5 }}
-            startIcon={<Google color="primary" />}
-          >
-            Sign with Google
-          </Button>
+          <GoogleSignButton />
         </Container>
       </Container>
     </AuthLayout>

@@ -9,9 +9,8 @@ import {
   Checkbox,
   Box,
 } from "@mui/material";
-import { PasswordInput, UsernameInput, EmailInput } from "../../components";
+import { PasswordInput, EmailInput, GoogleSignButton } from "../../components";
 import { NavLink } from "react-router-dom";
-import { Google } from "@mui/icons-material";
 
 export const LoginPage = () => {
   return (
@@ -29,7 +28,10 @@ export const LoginPage = () => {
           Sign in to continue to Chat App now.
         </Typography>
       </Container>
-      <Container style={{ backgroundColor: "#fff", padding: 14 }} maxWidth="xs">
+      <Container
+        sx={{ backgroundColor: "#fff", padding: 3, boxShadow: 4 }}
+        maxWidth="xs"
+      >
         <Container>
           <EmailInput />
           <PasswordInput />
@@ -83,15 +85,7 @@ export const LoginPage = () => {
           </Typography>
         </Divider>
         <Container>
-          <Button
-            variant="outlined"
-            fullWidth
-            color="primary"
-            sx={{ my: 1.5 }}
-            startIcon={<Google color="primary" />}
-          >
-            Sign with Google
-          </Button>
+          <GoogleSignButton />
         </Container>
       </Container>
     </AuthLayout>
