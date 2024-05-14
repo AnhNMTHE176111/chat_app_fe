@@ -9,10 +9,53 @@ import {
   Checkbox,
   Box,
 } from "@mui/material";
-import { PasswordInput, EmailInput, GoogleSignButton } from "../../components";
+import {
+  PasswordInput,
+  EmailInput,
+  GoogleSignButton,
+  NotificationAction,
+} from "../../components";
 import { NavLink } from "react-router-dom";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { LoginParams, login } from "../../services";
+import { useAppSelector, useAppDispatch } from "../../hooks";
+import {
+  hideNotificationAction,
+  showNotificationAction,
+} from "../../stores/notificationActionSlice";
 
 export const LoginPage = () => {
+  const { control, handleSubmit } = useForm<LoginParams>();
+  // The `state` arg is correctly typed as `RootState` already
+  const notificationAction = useAppSelector(
+    (state) => state.notificationAction
+  );
+  const dispatch = useAppDispatch();
+
+  const onSubmit: SubmitHandler<LoginParams> = async (data) => {
+    console.log(data);
+    login(data)
+      .then((data) => {
+        console.log("success", data);
+        dispatch(
+          showNotificationAction({
+            message: data.message || "Login Success",
+            severity: "success",
+          })
+        );
+        return;
+      })
+      .catch((err) => {
+        dispatch(
+          showNotificationAction({
+            message: err?.response?.data?.message,
+            severity: "error",
+          })
+        );
+        return;
+      });
+  };
+
   return (
     <AuthLayout>
       <Container>
@@ -33,35 +76,49 @@ export const LoginPage = () => {
         maxWidth="xs"
       >
         <Container>
-          <EmailInput />
-          <PasswordInput />
+          <NotificationAction
+            message={notificationAction.message}
+            open={!!notificationAction.open}
+            severity={notificationAction.severity}
+            onClose={() => dispatch(hideNotificationAction())}
+          />
 
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <FormControlLabel
-              control={<Checkbox size="small" />}
-              label="Remember me"
-              sx={{ color: "gray" }}
-            />
-            <NavLink
-              to="/forgot-password"
-              style={{
-                textDecoration: "none",
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <EmailInput control={control} name="email" />
+            <PasswordInput control={control} name="password" />
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignContent: "center",
+                alignItems: "center",
               }}
             >
-              Forgot Password
-            </NavLink>
-          </Box>
+              <FormControlLabel
+                control={<Checkbox size="small" name="remember_me" />}
+                label="Remember me"
+                sx={{ color: "gray" }}
+              />
+              <NavLink
+                to="/forgot-password"
+                style={{
+                  textDecoration: "none",
+                }}
+              >
+                Forgot Password
+              </NavLink>
+            </Box>
 
-          <Button variant="contained" fullWidth sx={{ my: 1.5 }}>
-            Sign In
-          </Button>
+            <Button
+              variant="contained"
+              fullWidth
+              sx={{ my: 1.5 }}
+              type="submit"
+            >
+              Sign In
+            </Button>
+          </form>
           <Typography
             align="center"
             variant="subtitle1"

@@ -1,8 +1,33 @@
 import { AccountBoxRounded } from "@mui/icons-material";
 import { InputAdornment, TextField } from "@mui/material";
 import { InputProps } from "../../types";
+import { USERNAME_REGEX } from "../../constants";
+import { useController } from "react-hook-form";
 
-export const UsernameInput: React.FC<InputProps> = ({ ...otherProps }) => {
+export const UsernameInput: React.FC<InputProps> = ({
+  control,
+  name,
+  ...otherProps
+}) => {
+  const {
+    field: { ...inputProps },
+    fieldState: { invalid, error },
+  } = useController({
+    control,
+    name,
+    rules: {
+      required: {
+        value: true,
+        message: "Username is required.",
+      },
+      pattern: {
+        value: USERNAME_REGEX,
+        message: "Username is invalid",
+      },
+    },
+    defaultValue: "",
+  });
+
   return (
     <TextField
       margin="dense"
@@ -10,7 +35,8 @@ export const UsernameInput: React.FC<InputProps> = ({ ...otherProps }) => {
       variant="outlined"
       size="small"
       label="Username *"
-      id="outlined-start-adornment"
+      error={invalid}
+      helperText={error?.message}
       sx={{ my: 1.5 }}
       InputProps={{
         startAdornment: (
@@ -19,7 +45,8 @@ export const UsernameInput: React.FC<InputProps> = ({ ...otherProps }) => {
           </InputAdornment>
         ),
       }}
-      { ...otherProps }
+      {...inputProps}
+      {...otherProps}
     />
   );
 };

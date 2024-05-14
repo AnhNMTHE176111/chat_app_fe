@@ -1,5 +1,11 @@
 import { RouteObject } from "react-router-dom";
-import { App, ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage } from "../pages";
+import {
+  App,
+  ForgotPasswordPage,
+  LoginPage,
+  RegisterPage,
+  ResetPasswordPage,
+} from "../pages";
 
 export const routes: RouteObject[] = [
   {
@@ -18,13 +24,13 @@ export const routes: RouteObject[] = [
         element: <RegisterPage />,
       },
       {
-        path: '/forgot-password',
-        element: <ForgotPasswordPage />
+        path: "/forgot-password",
+        element: <ForgotPasswordPage />,
       },
       {
-        path: '/reset-password',
-        element: <ResetPasswordPage />
-      }
+        path: "/reset-password",
+        element: <ResetPasswordPage />,
+      },
     ],
   },
 ];

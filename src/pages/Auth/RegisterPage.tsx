@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { AuthLayout } from "../../layouts";
 import { Container, Typography, Button, Divider } from "@mui/material";
 import {
@@ -8,8 +8,25 @@ import {
   GoogleSignButton,
 } from "../../components";
 import { NavLink } from "react-router-dom";
+import { RegisterParams, resgiter } from "../../services";
+import { SubmitHandler, useForm } from "react-hook-form";
+
+const initialFormState: RegisterParams = {
+  email: "",
+  username: "",
+  password: "",
+  password_confirmation: "",
+};
 
 export const RegisterPage: React.FC = () => {
+  // const [form, setForm] = useState<RegisterParams>(initialFormState);
+  const { control, handleSubmit } = useForm<RegisterParams>();
+
+  const onSubmit: SubmitHandler<RegisterParams> = async (data) => {
+    console.log(data);
+    await resgiter(data);
+  };
+
   return (
     <AuthLayout>
       <Container>
@@ -30,14 +47,25 @@ export const RegisterPage: React.FC = () => {
         maxWidth="xs"
       >
         <Container>
-          <EmailInput />
-          <UsernameInput />
-          <PasswordInput />
-          <PasswordInput label="Confirmation Password *" />
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <EmailInput control={control} name="email" />
+            <UsernameInput control={control} name="username" />
+            <PasswordInput control={control} name="password" />
+            <PasswordInput
+              control={control}
+              name="password_confirmation"
+              label="Password Confirmation *"
+            />
 
-          <Button variant="contained" fullWidth sx={{ my: 1.5 }}>
-            Register
-          </Button>
+            <Button
+              variant="contained"
+              fullWidth
+              sx={{ my: 1.5 }}
+              type="submit"
+            >
+              Register
+            </Button>
+          </form>
           <Typography
             align="center"
             variant="subtitle1"

@@ -3,8 +3,17 @@ import { AuthLayout } from "../../layouts";
 import { Container, Typography, Button, Divider } from "@mui/material";
 import { EmailInput, GoogleSignButton } from "../../components";
 import { NavLink } from "react-router-dom";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { ForgotPasswordParams, forgotPassword } from "../../services";
 
 export const ForgotPasswordPage = () => {
+  const { control, handleSubmit } = useForm<ForgotPasswordParams>();
+
+  const onSubmit: SubmitHandler<ForgotPasswordParams> = async (data) => {
+    console.log(data);
+    await forgotPassword(data);
+  };
+
   return (
     <AuthLayout>
       <Container
@@ -26,11 +35,14 @@ export const ForgotPasswordPage = () => {
             to reset your password via that email.
           </Typography>
 
-          <EmailInput />
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <EmailInput control={control} name="email" />
 
-          <Button variant="contained" fullWidth sx={{ my: 1.5 }}>
-            Send Email to Me
-          </Button>
+            <Button variant="contained" fullWidth sx={{ my: 1.5 }}>
+              Send Email to Me
+            </Button>
+          </form>
+
           <Typography
             align="center"
             variant="subtitle1"

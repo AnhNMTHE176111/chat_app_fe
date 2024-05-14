@@ -1,6 +1,6 @@
-const DOMAIN = import.meta.env.BASE_API;
+const DOMAIN = 'http://localhost:8000/api/v1';
 
-const URI = {
+export const URI = {
   DOMAIN,
 
   // Authentication
@@ -18,11 +18,14 @@ const URI = {
   FETCH_USER: "/users/:id",
 };
 
-const NON_AUTHORIZATION_API = [
+export const NON_AUTHORIZATION_API = [
   URI.FORGOT_PASSWORD,
   URI.LOGIN,
   URI.CHECK_OTP,
   URI.CONFIRM_RESET_PASSWORD,
 ];
 
-export { URI, NON_AUTHORIZATION_API };
+export default {
+  URI,
+  NON_AUTHORIZATION_API,
+};

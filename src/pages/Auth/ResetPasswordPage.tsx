@@ -3,8 +3,17 @@ import { AuthLayout } from "../../layouts";
 import { Container, Typography, Button, Divider } from "@mui/material";
 import { PasswordInput, EmailInput, GoogleSignButton } from "../../components";
 import { NavLink } from "react-router-dom";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { ResetPasswordParams, resetPassword } from "../../services";
 
 export const ResetPasswordPage = () => {
+  const { control, handleSubmit } = useForm<ResetPasswordParams>();
+
+  const onSubmit: SubmitHandler<ResetPasswordParams> = async (data) => {
+    console.log(data);
+    await resetPassword(data);
+  };
+
   return (
     <AuthLayout>
       <Container
@@ -25,13 +34,23 @@ export const ResetPasswordPage = () => {
             strong password to prevent unauthorized access to your account.
           </Typography>
 
-          <EmailInput />
-          <PasswordInput label="New Password *" />
-          <PasswordInput label="Confirmation New Password *" />
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <EmailInput control={control} name="email" />
+            <PasswordInput
+              control={control}
+              name="new_password"
+              label="New Password *"
+            />
+            <PasswordInput
+              control={control}
+              name="new_password_confirmation"
+              label="New Password Confirmation *"
+            />
 
-          <Button variant="contained" fullWidth sx={{ my: 1.5 }}>
-            Change Password
-          </Button>
+            <Button variant="contained" fullWidth sx={{ my: 1.5 }}>
+              Change Password
+            </Button>
+          </form>
           <Typography
             align="center"
             variant="subtitle1"
