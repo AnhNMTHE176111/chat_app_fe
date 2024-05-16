@@ -1,17 +1,45 @@
 import React from "react";
 import { AuthLayout } from "../../layouts";
 import { Container, Typography, Button, Divider } from "@mui/material";
-import { PasswordInput, EmailInput, GoogleSignButton } from "../../components";
+import { PasswordInput, EmailInput, GoogleSignButton, NotificationAction } from "../../components";
 import { NavLink } from "react-router-dom";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { ResetPasswordParams, resetPassword } from "../../services";
+import { useAppSelector, useAppDispatch } from "../../hooks";
+import {
+  hideNotificationAction,
+  showNotificationAction,
+} from "../../stores/notificationActionSlice";
 
 export const ResetPasswordPage = () => {
   const { control, handleSubmit } = useForm<ResetPasswordParams>();
+  const notificationAction = useAppSelector(
+    (state) => state.notificationAction
+  );
+  const dispatch = useAppDispatch();
 
   const onSubmit: SubmitHandler<ResetPasswordParams> = async (data) => {
     console.log(data);
-    await resetPassword(data);
+    await resetPassword(data)
+      .then((data) => {
+        console.log("success", data);
+        dispatch(
+          showNotificationAction({
+            message: data.message || "Login Success",
+            severity: "success",
+          })
+        );
+        return;
+      })
+      .catch((err) => {
+        dispatch(
+          showNotificationAction({
+            message: err?.response?.data?.message,
+            severity: "error",
+          })
+        );
+        return;
+      });
   };
 
   return (
@@ -33,6 +61,13 @@ export const ResetPasswordPage = () => {
             Almost done, change your password to complete. You should keep a
             strong password to prevent unauthorized access to your account.
           </Typography>
+
+          <NotificationAction
+            message={notificationAction.message}
+            open={!!notificationAction.open}
+            severity={notificationAction.severity}
+            onClose={() => dispatch(hideNotificationAction())}
+          />
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <EmailInput control={control} name="email" />

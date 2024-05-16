@@ -1,12 +1,22 @@
 // AuthLayout.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import { Box, Container } from "@mui/material";
+import { useAppDispatch } from "../hooks";
+import { hideNotificationAction } from "../stores/notificationActionSlice";
+import { useLocation } from "react-router-dom";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
 }
 
 export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
+  const location = useLocation();
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    // Hide notification when location changes
+    dispatch(hideNotificationAction());
+  }, [location.pathname]); // Run when location.pathname changes
+
   return (
     <Box
       style={{ backgroundColor: "#f7f7ff" }}

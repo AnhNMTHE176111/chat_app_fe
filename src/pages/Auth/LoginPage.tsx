@@ -15,7 +15,7 @@ import {
   GoogleSignButton,
   NotificationAction,
 } from "../../components";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { LoginParams, login } from "../../services";
 import { useAppSelector, useAppDispatch } from "../../hooks";
@@ -25,7 +25,17 @@ import {
 } from "../../stores/notificationActionSlice";
 
 export const LoginPage = () => {
-  const { control, handleSubmit } = useForm<LoginParams>();
+  const navigate = useNavigate();
+
+  const location = useLocation();
+  const { email, password } = location.state || {};
+
+  const { control, handleSubmit } = useForm<LoginParams>({
+    defaultValues: {
+      email: email,
+      password: password,
+    },
+  });
   // The `state` arg is correctly typed as `RootState` already
   const notificationAction = useAppSelector(
     (state) => state.notificationAction
@@ -37,18 +47,23 @@ export const LoginPage = () => {
     login(data)
       .then((data) => {
         console.log("success", data);
+
         dispatch(
           showNotificationAction({
             message: data.message || "Login Success",
             severity: "success",
           })
         );
+        navigate("/", {
+          replace: false,
+          state: {},
+        });
         return;
       })
       .catch((err) => {
         dispatch(
           showNotificationAction({
-            message: err?.response?.data?.message,
+            message: err?.response?.data?.message || "Something wrong",
             severity: "error",
           })
         );
@@ -84,8 +99,8 @@ export const LoginPage = () => {
           />
 
           <form onSubmit={handleSubmit(onSubmit)}>
-            <EmailInput control={control} name="email" />
-            <PasswordInput control={control} name="password" />
+            <EmailInput control={control} name="email" value={email} />
+            <PasswordInput control={control} name="password" value={password} />
 
             <Box
               sx={{
@@ -126,7 +141,11 @@ export const LoginPage = () => {
             gutterBottom
           >
             Don't have an account ?{" "}
-            <NavLink to="/register" style={{ textDecoration: "none" }}>
+            <NavLink
+              to="/register"
+              replace={true}
+              style={{ textDecoration: "none" }}
+            >
               Signup now
             </NavLink>
           </Typography>

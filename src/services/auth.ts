@@ -32,6 +32,10 @@ export interface ForgotPasswordParams {
   email: string;
 }
 
+export interface SendActivationParams {
+  email: string;
+}
+
 export const resgiter = async (
   params: RegisterParams
 ): Promise<BaseResponse> => {
@@ -41,7 +45,6 @@ export const resgiter = async (
 
 export const login = async (params: LoginParams): Promise<BaseResponse> => {
   const res = await client.post<BaseResponse>(URI.LOGIN, params);
-  console.log("data", res.data);
   return res.data;
 };
 
@@ -56,6 +59,13 @@ export const forgotPassword = async (
   params: ForgotPasswordParams
 ): Promise<BaseResponse> => {
   const res = await client.post<BaseResponse>(URI.FORGOT_PASSWORD, params);
+  return res.data;
+};
+
+export const sendActivation = async (
+  params: SendActivationParams
+): Promise<BaseResponse> => {
+  const res = await client.post<BaseResponse>(URI.SEND_ACTIVATION, params);
   return res.data;
 };
 

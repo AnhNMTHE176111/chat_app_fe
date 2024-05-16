@@ -2,47 +2,41 @@ import React from "react";
 import { AuthLayout } from "../../layouts";
 import { Container, Typography, Button, Divider } from "@mui/material";
 import {
-  PasswordInput,
-  UsernameInput,
   EmailInput,
   GoogleSignButton,
   NotificationAction,
-  
 } from "../../components";
-import { NavLink, useNavigate } from "react-router-dom";
-import { RegisterParams, resgiter } from "../../services";
+import { NavLink } from "react-router-dom";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useAppDispatch, useAppSelector } from "../../hooks";
+import {
+  ResetPasswordParams,
+  SendActivationParams,
+  sendActivation,
+} from "../../services";
+import { useAppSelector, useAppDispatch } from "../../hooks";
 import {
   hideNotificationAction,
   showNotificationAction,
 } from "../../stores/notificationActionSlice";
 
-export const RegisterPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { control, handleSubmit } = useForm<RegisterParams>();
+export const SendActivationPage = () => {
+  const { control, handleSubmit } = useForm<ResetPasswordParams>();
   const notificationAction = useAppSelector(
     (state) => state.notificationAction
   );
   const dispatch = useAppDispatch();
 
-  const onSubmit: SubmitHandler<RegisterParams> = async (data) => {
+  const onSubmit: SubmitHandler<SendActivationParams> = async (data) => {
     console.log(data);
-    resgiter(data)
-      .then((respone) => {
-        console.log("success", respone);
+    sendActivation(data)
+      .then((response) => {
+        console.log("success", response);
         dispatch(
           showNotificationAction({
-            message: "Register Successfully!",
+            message: `We have sent you your account activation email again ${data.email}. It may take up to 1 to 2 minute to complete.`,
             severity: "success",
           })
         );
-        navigate("success", {
-          state: {
-            email: data.email,
-            username: data.username,
-          },
-        });
         return;
       })
       .catch((err) => {
@@ -58,24 +52,26 @@ export const RegisterPage: React.FC = () => {
 
   return (
     <AuthLayout>
-      <Container>
-        <Typography align="center" variant="h5">
-          Register
-        </Typography>
-        <Typography
-          align="center"
-          variant="subtitle1"
-          color={"gray"}
-          gutterBottom
-        >
-          Get your Chat App account now.
-        </Typography>
-      </Container>
       <Container
-        sx={{ backgroundColor: "#fff", padding: 3, boxShadow: 4 }}
-        maxWidth="xs"
+        sx={{ backgroundColor: "#fff", padding: 2, boxShadow: 4 }}
+        maxWidth="lg"
       >
         <Container>
+          <Typography align="left" variant="h6">
+            Send account activation email
+          </Typography>
+          <Typography
+            align="left"
+            variant="subtitle2"
+            color={"gray"}
+            gutterBottom
+          >
+            Account activation email is sent when registering for a Chat App
+            account. If you do not receive it, please provide us with your Chat
+            App registered email address. We will send you an account activation
+            email again.
+          </Typography>
+
           <NotificationAction
             message={notificationAction.message}
             open={!!notificationAction.open}
@@ -85,21 +81,9 @@ export const RegisterPage: React.FC = () => {
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <EmailInput control={control} name="email" />
-            <UsernameInput control={control} name="username" />
-            <PasswordInput control={control} name="password" />
-            <PasswordInput
-              control={control}
-              name="password_confirmation"
-              label="Password Confirmation *"
-            />
 
-            <Button
-              variant="contained"
-              fullWidth
-              sx={{ my: 1.5 }}
-              type="submit"
-            >
-              Register
+            <Button variant="contained" fullWidth sx={{ my: 1.5 }}>
+              Send Email to Me
             </Button>
           </form>
           <Typography
@@ -108,13 +92,9 @@ export const RegisterPage: React.FC = () => {
             color={"gray"}
             gutterBottom
           >
-            Already have an account?{" "}
-            <NavLink
-              to="/login"
-              replace={true}
-              style={{ textDecoration: "none" }}
-            >
-              Login
+            OMG You've already verified your email ?{" "}
+            <NavLink to="/login" style={{ textDecoration: "none" }}>
+              Login now
             </NavLink>
           </Typography>
         </Container>
@@ -136,4 +116,4 @@ export const RegisterPage: React.FC = () => {
   );
 };
 
-export default RegisterPage;
+export default SendActivationPage;

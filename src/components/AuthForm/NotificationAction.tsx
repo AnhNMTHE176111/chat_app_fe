@@ -37,4 +37,4 @@ export const NotificationAction: React.FC<NotificationActionProps> = ({
   );
 };
 
-export default NotificationAction
+export default NotificationAction;

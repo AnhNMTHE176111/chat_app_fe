@@ -5,7 +5,9 @@ import {
   LoginPage,
   RegisterPage,
   ResetPasswordPage,
+  SendActivationPage,
 } from "../pages";
+import { RegisterSuccess } from "../components";
 
 export const routes: RouteObject[] = [
   {
@@ -21,7 +23,16 @@ export const routes: RouteObject[] = [
       },
       {
         path: "/register",
-        element: <RegisterPage />,
+        children: [
+          {
+            path: "",
+            element: <RegisterPage />,
+          },
+          {
+            path: "success",
+            element: <RegisterSuccess />,
+          },
+        ],
       },
       {
         path: "/forgot-password",
@@ -30,6 +41,10 @@ export const routes: RouteObject[] = [
       {
         path: "/reset-password",
         element: <ResetPasswordPage />,
+      },
+      {
+        path: "/send-activation",
+        element: <SendActivationPage />,
       },
     ],
   },

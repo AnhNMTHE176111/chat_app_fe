@@ -1,17 +1,49 @@
 import React from "react";
 import { AuthLayout } from "../../layouts";
 import { Container, Typography, Button, Divider } from "@mui/material";
-import { EmailInput, GoogleSignButton } from "../../components";
+import {
+  EmailInput,
+  GoogleSignButton,
+  NotificationAction,
+} from "../../components";
 import { NavLink } from "react-router-dom";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { ForgotPasswordParams, forgotPassword } from "../../services";
+import { useAppSelector, useAppDispatch } from "../../hooks";
+import {
+  hideNotificationAction,
+  showNotificationAction,
+} from "../../stores/notificationActionSlice";
 
 export const ForgotPasswordPage = () => {
   const { control, handleSubmit } = useForm<ForgotPasswordParams>();
+  const notificationAction = useAppSelector(
+    (state) => state.notificationAction
+  );
+  const dispatch = useAppDispatch();
 
   const onSubmit: SubmitHandler<ForgotPasswordParams> = async (data) => {
     console.log(data);
-    await forgotPassword(data);
+    forgotPassword(data)
+      .then((response) => {
+        console.log("success", response);
+        dispatch(
+          showNotificationAction({
+            message: `We've sent you an email with a link to reset your password. It may take 1 to 2 minutes to complete. Please check your inbox ${data.email}`,
+            severity: "success",
+          })
+        );
+        return;
+      })
+      .catch((err) => {
+        dispatch(
+          showNotificationAction({
+            message: err?.response?.data?.message,
+            severity: "error",
+          })
+        );
+        return;
+      });
   };
 
   return (
@@ -34,6 +66,13 @@ export const ForgotPasswordPage = () => {
             you used to register for a Chat App account. We will send you a link
             to reset your password via that email.
           </Typography>
+
+          <NotificationAction
+            message={notificationAction.message}
+            open={!!notificationAction.open}
+            severity={notificationAction.severity}
+            onClose={() => dispatch(hideNotificationAction())}
+          />
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <EmailInput control={control} name="email" />

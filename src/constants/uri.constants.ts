@@ -1,4 +1,4 @@
-const DOMAIN = 'http://localhost:8000/api/v1';
+const DOMAIN = "http://localhost:8000/api/v1";
 
 export const URI = {
   DOMAIN,
@@ -6,13 +6,14 @@ export const URI = {
   // Authentication
   REGISTER: "/auth/register",
   LOGIN: "/auth/login",
-  LOG_OUT: "/auth/logout",
+  LOGOUT: "/auth/logout",
   CHECK_OTP: "/auth/checkotp",
   CURRENT_USER: "/auth/current-user",
   REFRESH_TOKEN: "/auth/refresh",
   RESET_PASSWORD: "/auth/reset-password",
   FORGOT_PASSWORD: "/auth/forgot-password",
   CONFIRM_RESET_PASSWORD: "/auth/forgot-password",
+  SEND_ACTIVATION: "/auth/send-activation",
 
   // User
   FETCH_USER: "/users/:id",
