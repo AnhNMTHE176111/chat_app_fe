@@ -1,7 +1,12 @@
 import React from "react";
 import { AuthLayout } from "../../layouts";
 import { Container, Typography, Button, Divider } from "@mui/material";
-import { PasswordInput, EmailInput, GoogleSignButton, NotificationAction } from "../../components";
+import {
+  PasswordInput,
+  EmailInput,
+  GoogleSignButton,
+  NotificationAction,
+} from "../../components";
 import { NavLink } from "react-router-dom";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { ResetPasswordParams, resetPassword } from "../../services";
@@ -20,12 +25,12 @@ export const ResetPasswordPage = () => {
 
   const onSubmit: SubmitHandler<ResetPasswordParams> = async (data) => {
     console.log(data);
-    await resetPassword(data)
-      .then((data) => {
-        console.log("success", data);
+    resetPassword(data)
+      .then((response) => {
+        console.log("success", response);
         dispatch(
           showNotificationAction({
-            message: data.message || "Login Success",
+            message: response.message || "Login Success",
             severity: "success",
           })
         );
@@ -46,7 +51,7 @@ export const ResetPasswordPage = () => {
     <AuthLayout>
       <Container
         sx={{ backgroundColor: "#fff", padding: 2, boxShadow: 4 }}
-        maxWidth="lg"
+        maxWidth="sm"
       >
         <Container>
           <Typography align="left" variant="h6">

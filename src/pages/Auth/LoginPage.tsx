@@ -28,7 +28,7 @@ export const LoginPage = () => {
   const navigate = useNavigate();
 
   const location = useLocation();
-  const { email, password } = location.state || {};
+  const { email, password, isActiveEmail } = location.state || {};
 
   const { control, handleSubmit } = useForm<LoginParams>({
     defaultValues: {
@@ -42,15 +42,24 @@ export const LoginPage = () => {
   );
   const dispatch = useAppDispatch();
 
+  if (isActiveEmail) {
+    dispatch(
+      showNotificationAction({
+        message: "Email is Actived",
+        severity: "success",
+      })
+    );
+  }
+
   const onSubmit: SubmitHandler<LoginParams> = async (data) => {
     console.log(data);
     login(data)
-      .then((data) => {
-        console.log("success", data);
+      .then((response) => {
+        console.log("success", response);
 
         dispatch(
           showNotificationAction({
-            message: data.message || "Login Success",
+            message: response.message || "Login Success",
             severity: "success",
           })
         );

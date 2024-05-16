@@ -54,7 +54,7 @@ export const SendActivationPage = () => {
     <AuthLayout>
       <Container
         sx={{ backgroundColor: "#fff", padding: 2, boxShadow: 4 }}
-        maxWidth="lg"
+        maxWidth="sm"
       >
         <Container>
           <Typography align="left" variant="h6">

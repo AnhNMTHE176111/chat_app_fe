@@ -36,6 +36,10 @@ export interface SendActivationParams {
   email: string;
 }
 
+export interface VerifyEmailParams {
+  emailToken: string;
+}
+
 export const resgiter = async (
   params: RegisterParams
 ): Promise<BaseResponse> => {
@@ -66,6 +70,13 @@ export const sendActivation = async (
   params: SendActivationParams
 ): Promise<BaseResponse> => {
   const res = await client.post<BaseResponse>(URI.SEND_ACTIVATION, params);
+  return res.data;
+};
+
+export const verifyAccount = async (
+  params: VerifyEmailParams
+): Promise<BaseResponse> => {
+  const res = await client.post<BaseResponse>(URI.VERIFY_EMAIL, params);
   return res.data;
 };
 

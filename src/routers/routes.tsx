@@ -1,21 +1,27 @@
-import { RouteObject } from "react-router-dom";
+import { RouteObject, redirect } from "react-router-dom";
 import {
   App,
   ForgotPasswordPage,
   LoginPage,
+  NotFoundPage,
   RegisterPage,
   ResetPasswordPage,
   SendActivationPage,
+  VerifyAccountPage,
+  verifyAccountLoader,
 } from "../pages";
 import { RegisterSuccess } from "../components";
+import { verifyAccount } from "../services";
 
 export const routes: RouteObject[] = [
   {
     path: "/",
     element: <App />,
+    errorElement: <NotFoundPage />,
   },
   {
     path: "/",
+    errorElement: <NotFoundPage />,
     children: [
       {
         path: "/login",
@@ -45,6 +51,11 @@ export const routes: RouteObject[] = [
       {
         path: "/send-activation",
         element: <SendActivationPage />,
+      },
+      {
+        path: "/verify-email/:emailToken",
+        loader: verifyAccountLoader,
+        errorElement: <NotFoundPage />,
       },
     ],
   },

@@ -14,6 +14,7 @@ export const URI = {
   FORGOT_PASSWORD: "/auth/forgot-password",
   CONFIRM_RESET_PASSWORD: "/auth/forgot-password",
   SEND_ACTIVATION: "/auth/send-activation",
+  VERIFY_EMAIL: "/auth/verify-email",
 
   // User
   FETCH_USER: "/users/:id",

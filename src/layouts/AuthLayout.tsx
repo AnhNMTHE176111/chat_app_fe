@@ -35,7 +35,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
         style={{ marginTop: "50px" }}
       />
 
-      <Container maxWidth="sm">{children}</Container>
+      <Container maxWidth="xl">{children}</Container>
     </Box>
   );
 };
