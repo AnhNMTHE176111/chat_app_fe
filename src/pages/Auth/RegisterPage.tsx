@@ -7,7 +7,6 @@ import {
   EmailInput,
   GoogleSignButton,
   NotificationAction,
-  
 } from "../../components";
 import { NavLink, useNavigate } from "react-router-dom";
 import { RegisterParams, resgiter } from "../../services";
@@ -27,10 +26,8 @@ export const RegisterPage: React.FC = () => {
   const dispatch = useAppDispatch();
 
   const onSubmit: SubmitHandler<RegisterParams> = async (data) => {
-    console.log(data);
     resgiter(data)
       .then((respone) => {
-        console.log("success", respone);
         dispatch(
           showNotificationAction({
             message: "Register Successfully!",

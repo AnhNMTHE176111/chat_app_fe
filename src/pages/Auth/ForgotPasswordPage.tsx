@@ -23,10 +23,8 @@ export const ForgotPasswordPage = () => {
   const dispatch = useAppDispatch();
 
   const onSubmit: SubmitHandler<ForgotPasswordParams> = async (data) => {
-    console.log(data);
     forgotPassword(data)
       .then((response) => {
-        console.log("success", response);
         dispatch(
           showNotificationAction({
             message: `We've sent you an email with a link to reset your password. It may take 1 to 2 minutes to complete. Please check your inbox ${data.email}`,
@@ -77,7 +75,12 @@ export const ForgotPasswordPage = () => {
           <form onSubmit={handleSubmit(onSubmit)}>
             <EmailInput control={control} name="email" />
 
-            <Button variant="contained" fullWidth sx={{ my: 1.5 }}>
+            <Button
+              variant="contained"
+              fullWidth
+              sx={{ my: 1.5 }}
+              type="submit"
+            >
               Send Email to Me
             </Button>
           </form>

@@ -9,7 +9,6 @@ import {
 import { NavLink } from "react-router-dom";
 import { SubmitHandler, useForm } from "react-hook-form";
 import {
-  ResetPasswordParams,
   SendActivationParams,
   sendActivation,
 } from "../../services";
@@ -20,17 +19,15 @@ import {
 } from "../../stores/notificationActionSlice";
 
 export const SendActivationPage = () => {
-  const { control, handleSubmit } = useForm<ResetPasswordParams>();
+  const { control, handleSubmit } = useForm<SendActivationParams>();
   const notificationAction = useAppSelector(
     (state) => state.notificationAction
   );
   const dispatch = useAppDispatch();
 
   const onSubmit: SubmitHandler<SendActivationParams> = async (data) => {
-    console.log(data);
     sendActivation(data)
       .then((response) => {
-        console.log("success", response);
         dispatch(
           showNotificationAction({
             message: `We have sent you your account activation email again ${data.email}. It may take up to 1 to 2 minute to complete.`,
@@ -82,7 +79,12 @@ export const SendActivationPage = () => {
           <form onSubmit={handleSubmit(onSubmit)}>
             <EmailInput control={control} name="email" />
 
-            <Button variant="contained" fullWidth sx={{ my: 1.5 }}>
+            <Button
+              variant="contained"
+              fullWidth
+              sx={{ my: 1.5 }}
+              type="submit"
+            >
               Send Email to Me
             </Button>
           </form>

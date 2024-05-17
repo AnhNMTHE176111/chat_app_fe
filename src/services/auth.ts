@@ -21,10 +21,10 @@ export interface LoginParams {
 }
 
 export interface ResetPasswordParams {
-  token: string;
   email: string;
   new_password: string;
   new_password_confirmation: string;
+  passwordResetToken?: string;
 }
 
 export interface ForgotPasswordParams {

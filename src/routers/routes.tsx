@@ -1,4 +1,4 @@
-import { RouteObject, redirect } from "react-router-dom";
+import { RouteObject } from "react-router-dom";
 import {
   App,
   ForgotPasswordPage,
@@ -7,11 +7,9 @@ import {
   RegisterPage,
   ResetPasswordPage,
   SendActivationPage,
-  VerifyAccountPage,
   verifyAccountLoader,
 } from "../pages";
 import { RegisterSuccess } from "../components";
-import { verifyAccount } from "../services";
 
 export const routes: RouteObject[] = [
   {
@@ -45,7 +43,7 @@ export const routes: RouteObject[] = [
         element: <ForgotPasswordPage />,
       },
       {
-        path: "/reset-password",
+        path: "/reset-password/:passwordResetToken",
         element: <ResetPasswordPage />,
       },
       {

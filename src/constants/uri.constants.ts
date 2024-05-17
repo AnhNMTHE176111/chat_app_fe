@@ -7,12 +7,10 @@ export const URI = {
   REGISTER: "/auth/register",
   LOGIN: "/auth/login",
   LOGOUT: "/auth/logout",
-  CHECK_OTP: "/auth/checkotp",
   CURRENT_USER: "/auth/current-user",
   REFRESH_TOKEN: "/auth/refresh",
   RESET_PASSWORD: "/auth/reset-password",
   FORGOT_PASSWORD: "/auth/forgot-password",
-  CONFIRM_RESET_PASSWORD: "/auth/forgot-password",
   SEND_ACTIVATION: "/auth/send-activation",
   VERIFY_EMAIL: "/auth/verify-email",
 
@@ -20,12 +18,7 @@ export const URI = {
   FETCH_USER: "/users/:id",
 };
 
-export const NON_AUTHORIZATION_API = [
-  URI.FORGOT_PASSWORD,
-  URI.LOGIN,
-  URI.CHECK_OTP,
-  URI.CONFIRM_RESET_PASSWORD,
-];
+export const NON_AUTHORIZATION_API = [URI.FORGOT_PASSWORD, URI.LOGIN];
 
 export default {
   URI,

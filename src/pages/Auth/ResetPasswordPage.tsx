@@ -7,7 +7,7 @@ import {
   GoogleSignButton,
   NotificationAction,
 } from "../../components";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { ResetPasswordParams, resetPassword } from "../../services";
 import { useAppSelector, useAppDispatch } from "../../hooks";
@@ -17,6 +17,8 @@ import {
 } from "../../stores/notificationActionSlice";
 
 export const ResetPasswordPage = () => {
+  const { passwordResetToken } = useParams();
+  const navigate = useNavigate();
   const { control, handleSubmit } = useForm<ResetPasswordParams>();
   const notificationAction = useAppSelector(
     (state) => state.notificationAction
@@ -24,16 +26,21 @@ export const ResetPasswordPage = () => {
   const dispatch = useAppDispatch();
 
   const onSubmit: SubmitHandler<ResetPasswordParams> = async (data) => {
-    console.log(data);
+    data.passwordResetToken = passwordResetToken;
     resetPassword(data)
       .then((response) => {
-        console.log("success", response);
         dispatch(
           showNotificationAction({
-            message: response.message || "Login Success",
+            message: response.message || "Set New Password Success",
             severity: "success",
           })
         );
+        navigate("/login", {
+          state: {
+            email: data.email,
+            password: data.new_password,
+          },
+        });
         return;
       })
       .catch((err) => {
@@ -87,7 +94,12 @@ export const ResetPasswordPage = () => {
               label="New Password Confirmation *"
             />
 
-            <Button variant="contained" fullWidth sx={{ my: 1.5 }}>
+            <Button
+              variant="contained"
+              fullWidth
+              sx={{ my: 1.5 }}
+              type="submit"
+            >
               Change Password
             </Button>
           </form>

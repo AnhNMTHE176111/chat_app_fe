@@ -52,11 +52,8 @@ export const LoginPage = () => {
   }
 
   const onSubmit: SubmitHandler<LoginParams> = async (data) => {
-    console.log(data);
     login(data)
       .then((response) => {
-        console.log("success", response);
-
         dispatch(
           showNotificationAction({
             message: response.message || "Login Success",
