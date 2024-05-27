@@ -8,13 +8,16 @@ import { RouterProvider } from "react-router-dom";
 import router from "./routers";
 import { Provider } from "react-redux";
 import { store } from "./stores";
+import { AuthProvider } from "./hooks";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
   <Provider store={store}>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </Provider>
 );
 

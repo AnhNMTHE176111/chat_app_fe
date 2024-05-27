@@ -1,4 +1,3 @@
-import React from "react";
 import { AuthLayout } from "../../layouts";
 import {
   Container,
@@ -15,17 +14,17 @@ import {
   GoogleSignButton,
   NotificationAction,
 } from "../../components";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { LoginParams, login } from "../../services";
-import { useAppSelector, useAppDispatch } from "../../hooks";
+import { NavLink, useLocation } from "react-router-dom";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { LoginParams, LoginResponse, login } from "../../services";
+import { useAppSelector, useAppDispatch, useAuth, signin } from "../../hooks";
 import {
   hideNotificationAction,
   showNotificationAction,
 } from "../../stores/notificationActionSlice";
 
 export const LoginPage = () => {
-  const navigate = useNavigate();
+  const { dispatch } = useAuth();
 
   const location = useLocation();
   const { email, password, isActiveEmail } = location.state || {};
@@ -34,16 +33,17 @@ export const LoginPage = () => {
     defaultValues: {
       email: email,
       password: password,
+      remember_me: false,
     },
   });
   // The `state` arg is correctly typed as `RootState` already
   const notificationAction = useAppSelector(
     (state) => state.notificationAction
   );
-  const dispatch = useAppDispatch();
+  const dispatchNoti = useAppDispatch();
 
   if (isActiveEmail) {
-    dispatch(
+    dispatchNoti(
       showNotificationAction({
         message: "Email is Actived",
         severity: "success",
@@ -53,21 +53,28 @@ export const LoginPage = () => {
 
   const onSubmit: SubmitHandler<LoginParams> = async (data) => {
     login(data)
-      .then((response) => {
+      .then((response: LoginResponse) => {
         dispatch(
+          signin({
+            user: {
+              email: response.data.email,
+              username: response.data.username,
+              role: response.data.role,
+            },
+          })
+        );
+        dispatchNoti(
           showNotificationAction({
             message: response.message || "Login Success",
             severity: "success",
           })
         );
-        navigate("/", {
-          replace: false,
-          state: {},
-        });
+
+        // navigate(from, { replace: true });
         return;
       })
       .catch((err) => {
-        dispatch(
+        dispatchNoti(
           showNotificationAction({
             message: err?.response?.data?.message || "Something wrong",
             severity: "error",
@@ -101,7 +108,7 @@ export const LoginPage = () => {
             message={notificationAction.message}
             open={!!notificationAction.open}
             severity={notificationAction.severity}
-            onClose={() => dispatch(hideNotificationAction())}
+            onClose={() => dispatchNoti(hideNotificationAction())}
           />
 
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -116,10 +123,17 @@ export const LoginPage = () => {
                 alignItems: "center",
               }}
             >
-              <FormControlLabel
-                control={<Checkbox size="small" name="remember_me" />}
-                label="Remember me"
-                sx={{ color: "gray" }}
+              <Controller
+                control={control}
+                name="remember_me"
+                render={({ field }) => (
+                  <FormControlLabel
+                    {...field}
+                    control={<Checkbox size="small" name="remember_me" />}
+                    label="Remember me"
+                    sx={{ color: "gray" }}
+                  />
+                )}
               />
               <NavLink
                 to="/forgot-password"

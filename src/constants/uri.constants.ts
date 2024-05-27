@@ -17,6 +17,9 @@ export const URI = {
   // User
   FETCH_USER: "/users/:id",
 };
+const ADMIN_ROLE = "admin";
+const NORMAL_ROLE = "normal";
+export const ROLES = { ADMIN_ROLE, NORMAL_ROLE };
 
 export const NON_AUTHORIZATION_API = [URI.FORGOT_PASSWORD, URI.LOGIN];
 

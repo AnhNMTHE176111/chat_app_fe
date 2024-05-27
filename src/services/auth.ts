@@ -1,4 +1,5 @@
 import { URI } from "../constants";
+import { UserData } from "../hooks";
 import { client } from "./client";
 
 export interface BaseResponse {
@@ -40,6 +41,23 @@ export interface VerifyEmailParams {
   emailToken: string;
 }
 
+export interface LoginResponse extends BaseResponse {
+  data: {
+    username: string;
+    email: string;
+    fullName: string;
+    accessToken: string;
+    tokenExpireAt: string;
+    role: string;
+  };
+}
+
+export interface GetCurrentUserResponse extends BaseResponse {
+  data: {
+    user: UserData;
+  };
+}
+
 export const resgiter = async (
   params: RegisterParams
 ): Promise<BaseResponse> => {
@@ -47,8 +65,13 @@ export const resgiter = async (
   return res.data;
 };
 
-export const login = async (params: LoginParams): Promise<BaseResponse> => {
-  const res = await client.post<BaseResponse>(URI.LOGIN, params);
+export const login = async (params: LoginParams): Promise<LoginResponse> => {
+  const res = await client.post<LoginResponse>(URI.LOGIN, params);
+  return res.data;
+};
+
+export const logout = async (params: LoginParams): Promise<LoginResponse> => {
+  const res = await client.post<LoginResponse>(URI.LOGIN, params);
   return res.data;
 };
 
@@ -77,6 +100,11 @@ export const verifyAccount = async (
   params: VerifyEmailParams
 ): Promise<BaseResponse> => {
   const res = await client.post<BaseResponse>(URI.VERIFY_EMAIL, params);
+  return res.data;
+};
+
+export const getCurrentUser = async (): Promise<GetCurrentUserResponse> => {
+  const res = await client.get<GetCurrentUserResponse>(URI.CURRENT_USER);
   return res.data;
 };
 

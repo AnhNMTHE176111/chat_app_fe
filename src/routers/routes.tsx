@@ -1,4 +1,4 @@
-import { RouteObject } from "react-router-dom";
+import { Outlet, RouteObject } from "react-router-dom";
 import {
   App,
   ForgotPasswordPage,
@@ -10,16 +10,41 @@ import {
   verifyAccountLoader,
 } from "../pages";
 import { RegisterSuccess } from "../components";
+import { AuthGuard, GuestGuard, RoleBasedGuard } from "../guards";
+import { ROLES } from "../constants";
 
 export const routes: RouteObject[] = [
+  /** Unauthenticated Route */
   {
-    path: "/",
-    element: <App />,
     errorElement: <NotFoundPage />,
+    children: [
+      {
+        path: "/forgot-password",
+        element: <ForgotPasswordPage />,
+      },
+      {
+        path: "/reset-password/:passwordResetToken",
+        element: <ResetPasswordPage />,
+      },
+      {
+        path: "/send-activation",
+        element: <SendActivationPage />,
+      },
+      {
+        path: "/verify-email/:emailToken",
+        loader: verifyAccountLoader,
+        errorElement: <NotFoundPage />,
+      },
+    ],
   },
+
+  /** Authentication Route */
   {
-    path: "/",
-    errorElement: <NotFoundPage />,
+    element: (
+      <GuestGuard>
+        <Outlet />
+      </GuestGuard>
+    ),
     children: [
       {
         path: "/login",
@@ -38,22 +63,49 @@ export const routes: RouteObject[] = [
           },
         ],
       },
+    ],
+  },
+
+  /** Authenticated Route */
+  {
+    element: (
+      <AuthGuard>
+        <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
+          <Outlet />
+        </RoleBasedGuard>
+      </AuthGuard>
+    ),
+    errorElement: <NotFoundPage />,
+    children: [
       {
-        path: "/forgot-password",
-        element: <ForgotPasswordPage />,
+        path: "/",
+        element: <App />,
       },
       {
-        path: "/reset-password/:passwordResetToken",
-        element: <ResetPasswordPage />,
+        path: "/home",
+        element: <App />,
       },
       {
-        path: "/send-activation",
-        element: <SendActivationPage />,
+        path: "/about",
+        element: <App />,
       },
+    ],
+  },
+
+  /** Admin Route */
+  {
+    path: "/admin",
+    element: (
+      <AuthGuard>
+        <RoleBasedGuard accessibleRoles={[ROLES.ADMIN_ROLE]}>
+          <Outlet />
+        </RoleBasedGuard>
+      </AuthGuard>
+    ),
+    children: [
       {
-        path: "/verify-email/:emailToken",
-        loader: verifyAccountLoader,
-        errorElement: <NotFoundPage />,
+        path: "",
+        element: <App />,
       },
     ],
   },

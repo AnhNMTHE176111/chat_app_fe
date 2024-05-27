@@ -15,7 +15,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   useEffect(() => {
     // Hide notification when location changes
     dispatch(hideNotificationAction());
-  }, [location.pathname]); // Run when location.pathname changes
+  }, [location.pathname]); // Run whenever location.pathname changes
 
   return (
     <Box
