@@ -1,28 +1,29 @@
-const DOMAIN = import.meta.env.BASE_API;
+const DOMAIN = "http://localhost:8000/api/v1";
 
-const URI = {
+export const URI = {
   DOMAIN,
 
   // Authentication
   REGISTER: "/auth/register",
   LOGIN: "/auth/login",
-  LOG_OUT: "/auth/logout",
-  CHECK_OTP: "/auth/checkotp",
+  LOGOUT: "/auth/logout",
   CURRENT_USER: "/auth/current-user",
   REFRESH_TOKEN: "/auth/refresh",
   RESET_PASSWORD: "/auth/reset-password",
   FORGOT_PASSWORD: "/auth/forgot-password",
-  CONFIRM_RESET_PASSWORD: "/auth/forgot-password",
+  SEND_ACTIVATION: "/auth/send-activation",
+  VERIFY_EMAIL: "/auth/verify-email",
 
   // User
   FETCH_USER: "/users/:id",
 };
+const ADMIN_ROLE = "admin";
+const NORMAL_ROLE = "normal";
+export const ROLES = { ADMIN_ROLE, NORMAL_ROLE };
 
-const NON_AUTHORIZATION_API = [
-  URI.FORGOT_PASSWORD,
-  URI.LOGIN,
-  URI.CHECK_OTP,
-  URI.CONFIRM_RESET_PASSWORD,
-];
+export const NON_AUTHORIZATION_API = [URI.FORGOT_PASSWORD, URI.LOGIN];
 
-export { URI, NON_AUTHORIZATION_API };
+export default {
+  URI,
+  NON_AUTHORIZATION_API,
+};

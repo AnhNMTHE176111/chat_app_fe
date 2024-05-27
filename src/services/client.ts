@@ -3,6 +3,9 @@ import { URI } from "../constants/uri.constants";
 
 const client = axios.create({
   baseURL: URI.DOMAIN,
+  withCredentials: true,
+  timeout: 20000,
+  timeoutErrorMessage: "The connection has timed out",
 });
 
 client.interceptors.request.use(
