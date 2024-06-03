@@ -1,4 +1,5 @@
-const DOMAIN = "http://localhost:8000/api/v1";
+const DOMAIN =
+  (process.env.BASE_API as string) || "http://localhost:8000/api/v1";
 
 export const URI = {
   DOMAIN,
@@ -8,7 +9,7 @@ export const URI = {
   LOGIN: "/auth/login",
   LOGOUT: "/auth/logout",
   CURRENT_USER: "/auth/current-user",
-  REFRESH_TOKEN: "/auth/refresh",
+  REFRESH_TOKEN: "/auth/token",
   RESET_PASSWORD: "/auth/reset-password",
   FORGOT_PASSWORD: "/auth/forgot-password",
   SEND_ACTIVATION: "/auth/send-activation",

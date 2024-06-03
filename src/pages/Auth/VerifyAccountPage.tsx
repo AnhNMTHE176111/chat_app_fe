@@ -1,6 +1,10 @@
-import React from "react";
-import { LoaderFunctionArgs, redirect } from "react-router-dom";
-import { verifyAccount } from "../../services";
+import React, { useEffect } from "react";
+import {
+  LoaderFunctionArgs,
+  useLoaderData,
+  useNavigate,
+} from "react-router-dom";
+import { VerifyEmailResponse, verifyAccount } from "../../services";
 
 export const verifyAccountLoader = async ({
   params,
@@ -9,14 +13,29 @@ export const verifyAccountLoader = async ({
     throw new Response("No token provided", { status: 400 });
   }
   try {
-    await verifyAccount({ emailToken: params.emailToken });
-    return redirect("/login");
+    const response = await verifyAccount({ emailToken: params.emailToken });
+    return response;
   } catch (error) {
     throw new Response("Verification failed", { status: 500 });
   }
 };
 
 export const VerifyAccountPage = () => {
+  const navigate = useNavigate();
+  const response = useLoaderData() as VerifyEmailResponse;
+
+  useEffect(() => {
+    if (response) {
+      navigate("/login", {
+        state: {
+          isActiveEmail: response.data.verificationStatus,
+          email: response.data.email,
+        },
+        replace: true,
+      });
+    }
+  }, [response, navigate]);
+
   return <div>Verifying...</div>;
 };
 

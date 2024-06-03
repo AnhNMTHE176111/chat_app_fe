@@ -1,7 +1,9 @@
 /// <reference types="react-scripts" />
 
+interface ImportMetaEnv {
+  readonly BASE_API: string;
+}
+
 interface ImportMeta {
-  env: {
-    BASE_API: string;
-  };
+  readonly env: ImportMetaEnv;
 }

@@ -10,8 +10,8 @@ import { initialize, reducer } from "./reducers";
 import { getCurrentUser } from "../../services";
 
 export interface UserData {
-  username: string;
   email: string;
+  avatar?: string;
   fullName?: string;
   accessToken?: string;
   tokenExpireAt?: string;
