@@ -3,7 +3,7 @@ import { AuthLayout } from "../../layouts";
 import { Container, Typography, Button, Divider } from "@mui/material";
 import {
   PasswordInput,
-  UsernameInput,
+  FullNameInput,
   EmailInput,
   GoogleSignButton,
   NotificationAction,
@@ -37,7 +37,7 @@ export const RegisterPage: React.FC = () => {
         navigate("success", {
           state: {
             email: data.email,
-            username: data.username,
+            fullName: data.fullName,
           },
         });
         return;
@@ -82,7 +82,7 @@ export const RegisterPage: React.FC = () => {
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <EmailInput control={control} name="email" />
-            <UsernameInput control={control} name="username" />
+            <FullNameInput control={control} name="fullName" />
             <PasswordInput control={control} name="password" />
             <PasswordInput
               control={control}

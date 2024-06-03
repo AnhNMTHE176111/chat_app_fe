@@ -7,6 +7,7 @@ import {
   RegisterPage,
   ResetPasswordPage,
   SendActivationPage,
+  VerifyAccountPage,
   verifyAccountLoader,
 } from "../pages";
 import { RegisterSuccess } from "../components";
@@ -33,6 +34,7 @@ export const routes: RouteObject[] = [
       {
         path: "/verify-email/:emailToken",
         loader: verifyAccountLoader,
+        element: <VerifyAccountPage />,
         errorElement: <NotFoundPage />,
       },
     ],

@@ -10,7 +10,7 @@ export interface BaseResponse {
 
 export interface RegisterParams {
   email: string;
-  username: string;
+  fullName: string;
   password: string;
   password_confirmation: string;
 }
@@ -43,7 +43,6 @@ export interface VerifyEmailParams {
 
 export interface LoginResponse extends BaseResponse {
   data: {
-    username: string;
     email: string;
     fullName: string;
     accessToken: string;
@@ -55,6 +54,13 @@ export interface LoginResponse extends BaseResponse {
 export interface GetCurrentUserResponse extends BaseResponse {
   data: {
     user: UserData;
+  };
+}
+
+export interface VerifyEmailResponse extends BaseResponse {
+  data: {
+    email: string;
+    verificationStatus: boolean;
   };
 }
 
@@ -70,8 +76,13 @@ export const login = async (params: LoginParams): Promise<LoginResponse> => {
   return res.data;
 };
 
-export const logout = async (params: LoginParams): Promise<LoginResponse> => {
-  const res = await client.post<LoginResponse>(URI.LOGIN, params);
+export const logout = async (): Promise<BaseResponse> => {
+  const res = await client.post<BaseResponse>(URI.LOGOUT);
+  return res.data;
+};
+
+export const token = async (): Promise<BaseResponse> => {
+  const res = await client.post<BaseResponse>(URI.REFRESH_TOKEN);
   return res.data;
 };
 
@@ -98,8 +109,8 @@ export const sendActivation = async (
 
 export const verifyAccount = async (
   params: VerifyEmailParams
-): Promise<BaseResponse> => {
-  const res = await client.post<BaseResponse>(URI.VERIFY_EMAIL, params);
+): Promise<VerifyEmailResponse> => {
+  const res = await client.post<VerifyEmailResponse>(URI.VERIFY_EMAIL, params);
   return res.data;
 };
 

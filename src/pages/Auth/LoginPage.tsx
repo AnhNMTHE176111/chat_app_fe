@@ -58,7 +58,7 @@ export const LoginPage = () => {
           signin({
             user: {
               email: response.data.email,
-              username: response.data.username,
+              fullName: response.data.fullName,
               role: response.data.role,
             },
           })

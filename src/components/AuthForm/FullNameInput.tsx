@@ -1,10 +1,9 @@
 import { AccountBoxRounded } from "@mui/icons-material";
 import { InputAdornment, TextField } from "@mui/material";
 import { InputProps } from "../../types";
-import { USERNAME_REGEX } from "../../constants";
 import { useController } from "react-hook-form";
 
-export const UsernameInput: React.FC<InputProps> = ({
+export const FullNameInput: React.FC<InputProps> = ({
   control,
   name,
   ...otherProps
@@ -18,11 +17,15 @@ export const UsernameInput: React.FC<InputProps> = ({
     rules: {
       required: {
         value: true,
-        message: "Username is required.",
+        message: "FullName is required.",
       },
-      pattern: {
-        value: USERNAME_REGEX,
-        message: "Username is invalid",
+      minLength: {
+        value: 3,
+        message: "FullName must longer than 3 character",
+      },
+      maxLength: {
+        value: 25,
+        message: "FullName must shorter than 25 character",
       },
     },
     defaultValue: "",
@@ -34,7 +37,7 @@ export const UsernameInput: React.FC<InputProps> = ({
       fullWidth
       variant="outlined"
       size="small"
-      label="Username *"
+      label="FullName *"
       error={invalid}
       helperText={error?.message}
       sx={{ my: 1.5 }}
@@ -51,4 +54,4 @@ export const UsernameInput: React.FC<InputProps> = ({
   );
 };
 
-export default UsernameInput;
+export default FullNameInput;

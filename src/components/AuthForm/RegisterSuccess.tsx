@@ -4,13 +4,13 @@ import { Container, Typography, Alert } from "@mui/material";
 import { NavLink, useLocation } from "react-router-dom";
 
 interface RegisterSuccessParams {
-  username?: string;
+  fullName?: string;
   email?: string;
 }
 
 export const RegisterSuccess: React.FC<RegisterSuccessParams> = () => {
   const location = useLocation();
-  const { username, email } = location.state || {};
+  const { fullName, email } = location.state || {};
 
   return (
     <AuthLayout>
@@ -33,7 +33,7 @@ export const RegisterSuccess: React.FC<RegisterSuccessParams> = () => {
           </Typography>
 
           <Alert severity="success" sx={{ mb: 1 }}>
-            Welcome <b>{username}</b>, your account has been successfully
+            Welcome <b>{fullName}</b>, your account has been successfully
             registered. We have sent you an activation email at <b>{email}</b>.
             Please check your inbox for completion. If you do not receive an
             activation email from us, please click{" "}
