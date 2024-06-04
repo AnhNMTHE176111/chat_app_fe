@@ -1,13 +1,114 @@
-import { RouteObject } from "react-router-dom";
-import { App, LoginPage } from "../pages";
+import { Outlet, RouteObject } from "react-router-dom";
+import {
+  App,
+  ForgotPasswordPage,
+  LoginPage,
+  NotFoundPage,
+  RegisterPage,
+  ResetPasswordPage,
+  SendActivationPage,
+  VerifyAccountPage,
+  verifyAccountLoader,
+} from "../pages";
+import { RegisterSuccess } from "../components";
+import { AuthGuard, GuestGuard, RoleBasedGuard } from "../guards";
+import { ROLES } from "../constants";
 
 export const routes: RouteObject[] = [
+  /** Unauthenticated Route */
   {
-    path: "/",
-    element: <App />,
+    errorElement: <NotFoundPage />,
+    children: [
+      {
+        path: "/forgot-password",
+        element: <ForgotPasswordPage />,
+      },
+      {
+        path: "/reset-password/:passwordResetToken",
+        element: <ResetPasswordPage />,
+      },
+      {
+        path: "/send-activation",
+        element: <SendActivationPage />,
+      },
+      {
+        path: "/verify-email/:emailToken",
+        loader: verifyAccountLoader,
+        element: <VerifyAccountPage />,
+        errorElement: <NotFoundPage />,
+      },
+    ],
   },
+
+  /** Authentication Route */
   {
-    path: "/login",
-    element: <LoginPage />,
+    element: (
+      <GuestGuard>
+        <Outlet />
+      </GuestGuard>
+    ),
+    children: [
+      {
+        path: "/login",
+        element: <LoginPage />,
+      },
+      {
+        path: "/register",
+        children: [
+          {
+            path: "",
+            element: <RegisterPage />,
+          },
+          {
+            path: "success",
+            element: <RegisterSuccess />,
+          },
+        ],
+      },
+    ],
+  },
+
+  /** Authenticated Route */
+  {
+    element: (
+      <AuthGuard>
+        <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
+          <Outlet />
+        </RoleBasedGuard>
+      </AuthGuard>
+    ),
+    errorElement: <NotFoundPage />,
+    children: [
+      {
+        path: "/",
+        element: <App />,
+      },
+      {
+        path: "/home",
+        element: <App />,
+      },
+      {
+        path: "/about",
+        element: <App />,
+      },
+    ],
+  },
+
+  /** Admin Route */
+  {
+    path: "/admin",
+    element: (
+      <AuthGuard>
+        <RoleBasedGuard accessibleRoles={[ROLES.ADMIN_ROLE]}>
+          <Outlet />
+        </RoleBasedGuard>
+      </AuthGuard>
+    ),
+    children: [
+      {
+        path: "",
+        element: <App />,
+      },
+    ],
   },
 ];

@@ -6,14 +6,19 @@ import reportWebVitals from "./reportWebVitals";
 
 import { RouterProvider } from "react-router-dom";
 import router from "./routers";
+import { Provider } from "react-redux";
+import { store } from "./stores";
+import { AuthProvider } from "./hooks";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
-  <React.StrictMode>
-    <RouterProvider router={router} />
-  </React.StrictMode>
+  <Provider store={store}>
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  </Provider>
 );
 
 // If you want your app to work offline and load faster, you can change
