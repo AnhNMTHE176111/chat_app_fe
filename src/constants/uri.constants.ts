@@ -1,5 +1,5 @@
 const DOMAIN =
-  (process.env.BASE_API as string) || "http://localhost:8000/api/v1";
+  (process.env.BASE_API as string) || "http://18.215.244.140:8000/api/v1";
 
 export const URI = {
   DOMAIN,
