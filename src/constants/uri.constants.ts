@@ -1,5 +1,4 @@
-const DOMAIN =
-  (process.env.BASE_API as string) || "http://18.215.244.140:8000/api/v1";
+const DOMAIN = process.env.REACT_APP_BASE_API;
 
 export const URI = {
   DOMAIN,
