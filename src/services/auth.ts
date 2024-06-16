@@ -8,6 +8,9 @@ export interface BaseResponse {
   message?: string;
 }
 
+export interface SearchParams {
+  name: string;
+}
 export interface RegisterParams {
   email: string;
   fullName: string;

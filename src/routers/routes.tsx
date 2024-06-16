@@ -9,6 +9,8 @@ import {
   SendActivationPage,
   VerifyAccountPage,
   verifyAccountLoader,
+  ChatPage,
+  CallPage,
 } from "../pages";
 import { RegisterSuccess } from "../components";
 import { AuthGuard, GuestGuard, RoleBasedGuard } from "../guards";
@@ -70,22 +72,31 @@ export const routes: RouteObject[] = [
 
   /** Authenticated Route */
   {
+    // element: (
+    //   <AuthGuard>
+    //     <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
+    //       <Outlet />
+    //     </RoleBasedGuard>
+    //   </AuthGuard>
+    // ),
     element: (
-      <AuthGuard>
-        <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
-          <Outlet />
-        </RoleBasedGuard>
-      </AuthGuard>
+      <GuestGuard>
+        <Outlet />
+      </GuestGuard>
     ),
     errorElement: <NotFoundPage />,
     children: [
       {
         path: "/",
-        element: <App />,
+        element: <ChatPage />,
       },
       {
-        path: "/home",
-        element: <App />,
+        path: "/chat/:id",
+        element: <ChatPage />,
+      },
+      {
+        path: "/video-call",
+        element: <CallPage />,
       },
       {
         path: "/about",
