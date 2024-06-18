@@ -4,11 +4,11 @@ import { useLocation } from "react-router-dom";
 import { useAppDispatch } from "../hooks";
 import { hideNotificationAction } from "../stores/notificationActionSlice";
 
-interface AuthLayoutProps {
+interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
   const dispatch = useAppDispatch();
 
@@ -52,4 +52,4 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   );
 };
 
-export default AuthLayout;
+export default AdminLayout;
