@@ -18,6 +18,15 @@ import { ROLES } from "../constants";
 import { HomeLayout } from "../layouts";
 import { SocketContextProvider } from "../providers";
 
+import Dashboard from "../pages/Admin/Dashboard/Dashboard";
+import EmojiManager from "../pages/Admin/EmojiManage/EmojiManage";
+import UserManager from "../pages/Admin/UserManage/UserManage";
+import AddUser from "../pages/Admin/UserManage/AddUser";
+import AddEmojiPage from "../pages/Admin/EmojiManage/AddEmoji";
+import AddEmoji from "../pages/Admin/EmojiManage/AddEmoji";
+import EditEmoji from "../pages/Admin/EmojiManage/EditEmoji";
+import EditUser from "../pages/Admin/UserManage/EditUser";
+// import UserManager from "../pages/Admin/UserManage";
 export const routes: RouteObject[] = [
   /** Unauthenticated Route */
   {
@@ -114,16 +123,44 @@ export const routes: RouteObject[] = [
   {
     path: "/admin",
     element: (
-      <AuthGuard>
-        <RoleBasedGuard accessibleRoles={[ROLES.ADMIN_ROLE]}>
-          <Outlet />
-        </RoleBasedGuard>
-      </AuthGuard>
+      // <AuthGuard>
+      // <RoleBasedGuard accessibleRoles={[ROLES.ADMIN_ROLE]}>
+      <Outlet />
+      // </RoleBasedGuard>
+      // </AuthGuard>
     ),
     children: [
       {
         path: "",
         element: <App />,
+      },
+      {
+        path: "dashboard",
+        element: <Dashboard />,
+      },
+      {
+        path: "manage-user",
+        element: <UserManager />,
+      },
+      {
+        path: "manage-emoji",
+        element: <EmojiManager />,
+      },
+      {
+        path: "add-user",
+        element: <AddUser />,
+      },
+      {
+        path: "edit-user/:id",
+        element: <EditUser />,
+      },
+      {
+        path: "add-emoji",
+        element: <AddEmoji />,
+      },
+      {
+        path: "edit-emoji/:id",
+        element: <EditEmoji />,
       },
     ],
   },
