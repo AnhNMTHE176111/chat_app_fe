@@ -15,6 +15,8 @@ import {
 import { RegisterSuccess } from "../components";
 import { AuthGuard, GuestGuard, RoleBasedGuard } from "../guards";
 import { ROLES } from "../constants";
+import { HomeLayout } from "../layouts";
+import { SocketContextProvider } from "../providers";
 
 export const routes: RouteObject[] = [
   /** Unauthenticated Route */
@@ -72,20 +74,23 @@ export const routes: RouteObject[] = [
 
   /** Authenticated Route */
   {
-    // element: (
-    //   <AuthGuard>
-    //     <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
-    //       <Outlet />
-    //     </RoleBasedGuard>
-    //   </AuthGuard>
-    // ),
     element: (
-      <GuestGuard>
-        <Outlet />
-      </GuestGuard>
+      <AuthGuard>
+        <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
+          <SocketContextProvider>
+            <HomeLayout>
+              <Outlet />
+            </HomeLayout>
+          </SocketContextProvider>
+        </RoleBasedGuard>
+      </AuthGuard>
     ),
     errorElement: <NotFoundPage />,
     children: [
+      {
+        path: "/home",
+        element: <App />,
+      },
       {
         path: "/",
         element: <ChatPage />,

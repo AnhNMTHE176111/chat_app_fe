@@ -52,8 +52,8 @@ function Sidebar() {
               color: location.pathname === item.path ? "#ed8207" : "white",
               margin: "auto",
               borderRadius: "15px",
-              width: "60%",
-              height: "50px",
+              width: "50%",
+              height: "60px",
             }}
             disableGutters
           >

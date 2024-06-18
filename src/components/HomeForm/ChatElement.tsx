@@ -1,51 +1,50 @@
 import { Avatar, Badge, Box, Stack, Typography, styled } from "@mui/material";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth, useSocket } from "../../hooks";
+import { GROUP_CONVERSATION, SINGLE_CONVERSATION } from "../../constants";
+import { AvatarOnline } from "./AvatarOnline";
 
-export const ChatElement = (data: any) => {
+const StyledChatBox = styled(Box)(({ theme }) => ({
+  "&:hover": {
+    cursor: "pointer",
+  },
+}));
+
+export const ChatElement = ({ data }: { data: any }) => {
   const { id } = useParams<{ id: string }>();
+  const [conversation, setConversation] = useState(data);
   const navigate = useNavigate();
-  const data1 = data.data;
-  const StyledChatBox = styled(Box)(({ theme }) => ({
-    "&:hover": {
-      cursor: "pointer",
-    },
-  }));
+  const { user } = useAuth();
+  const { onlineUsers } = useSocket();
 
-  const StyledBadge = styled(Badge)(({ theme }) => ({
-    "& .MuiBadge-badge": {
-      backgroundColor: "#44b700",
-      color: "#44b700",
-      boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
-      "&::after": {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        borderRadius: "50%",
-        animation: "ripple 1.2s infinite ease-in-out",
-        border: "1px solid currentColor",
-        content: '""',
-      },
-    },
-    "@keyframes ripple": {
-      "0%": {
-        transform: "scale(.8)",
-        opacity: 1,
-      },
-      "100%": {
-        transform: "scale(2.4)",
-        opacity: 0,
-      },
-    },
-  }));
+  useEffect(() => {
+    let online = false;
+    online = conversation.participants.some((participant: any) => {
+      return (
+        participant._id.toString() !== user?.id &&
+        onlineUsers.includes(participant._id.toString())
+      );
+    });
+    setConversation((prev: any) => ({
+      ...prev,
+      online: online,
+    }));
+  }, [onlineUsers]);
 
-  const isSelected = id === data1.id;
+  const handleSelectConversation = () => {
+    navigate(`/chat/${conversation._id}`, {
+      state: {
+        conversation: conversation,
+      },
+    });
+  };
+
+  const isSelected = id === conversation._id;
 
   return (
     <StyledChatBox
-      onClick={() => navigate(`/chat/${data1.id}`)}
+      onClick={handleSelectConversation}
       sx={{
         width: "80%",
         borderRadius: 5,
@@ -61,36 +60,29 @@ export const ChatElement = (data: any) => {
         justifyContent={"space-between"}
       >
         <Stack direction={"row"} spacing={2}>
-          {data1.online ? (
-            <StyledBadge
-              overlap="circular"
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              variant="dot"
-            >
-              <Avatar src="" />
-            </StyledBadge>
-          ) : (
-            <Avatar src="" />
-          )}
+          <AvatarOnline
+            isOnline={conversation.online}
+            srcImage={conversation.picture}
+          />
           <Stack spacing={0.3}>
             <Typography
               variant="subtitle2"
               color={isSelected ? "white" : "black"}
             >
-              {data1.name}
+              {conversation.title}
             </Typography>
             <Typography
               variant="caption"
-              fontWeight={data1.unread ? 700 : 400}
+              fontWeight={conversation.unread ? 700 : 400}
               color={isSelected ? "white" : "black"}
             >
-              {data1.message?.slice(0, 20)}
+              {conversation.message?.slice(0, 20)}
             </Typography>
           </Stack>
         </Stack>
         <Stack spacing={2} direction={"row"}>
           <Typography sx={{ fontWeight: 600 }} variant="caption">
-            {data1.time}
+            {conversation.time}
           </Typography>
         </Stack>
       </Stack>

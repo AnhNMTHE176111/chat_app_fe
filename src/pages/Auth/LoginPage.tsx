@@ -57,8 +57,10 @@ export const LoginPage = () => {
         dispatch(
           signin({
             user: {
+              id: response.data.id,
               email: response.data.email,
               fullName: response.data.fullName,
+              avatar: response.data.avatar,
               role: response.data.role,
             },
           })

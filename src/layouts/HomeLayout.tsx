@@ -19,9 +19,9 @@ export const HomeLayout: React.FC<HomeLayoutProps> = ({ children }) => {
         minHeight: "640px",
       }}
     >
-      <Grid item xs={12} height={"7%"} children={<Header />} />
-      <Grid item xs={12} style={{ display: "flex" }} height={"93%"}>
-        <Grid item xs={1} height={"97%"}>
+      <Grid item xs={12} height={"5%"} children={<Header />} />
+      <Grid item xs={12} style={{ display: "flex" }} height={"95%"}>
+        <Grid item xs={1} maxHeight={"95%"}>
           <Sidebar />
         </Grid>
         <Grid

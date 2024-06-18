@@ -2,9 +2,13 @@ import { Divider, Grid, List, ListItem } from "@mui/material";
 import { ChatElement, SearchInput } from "../../../components";
 import { useForm } from "react-hook-form";
 import { SearchParams } from "../../../services";
+import { useEffect, useState } from "react";
+import { getAllConversation } from "../../../services";
 
 export function HistoryChat() {
   const { control, handleSubmit } = useForm<SearchParams>();
+  const [conversations, setConversations] = useState<any[]>([]);
+
   const data = [
     {
       name: "name 1",
@@ -23,6 +27,18 @@ export function HistoryChat() {
       id: "2",
     },
   ];
+
+  useEffect(() => {
+    getAllConversation()
+      .then((response) => {
+        if (response && response.data) {
+          setConversations(response.data);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching conversations:", error);
+      });
+  }, []);
 
   return (
     <Grid item xs={12} sx={{ height: "100%" }}>
@@ -46,8 +62,8 @@ export function HistoryChat() {
           alignItems: "center",
         }}
       >
-        {data?.map((value, index) => (
-          <ChatElement key={index} data={value} />
+        {conversations.map((value: any) => (
+          <ChatElement key={value._id} data={value} />
         ))}
       </List>
     </Grid>

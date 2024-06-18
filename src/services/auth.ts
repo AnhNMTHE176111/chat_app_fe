@@ -46,9 +46,11 @@ export interface VerifyEmailParams {
 
 export interface LoginResponse extends BaseResponse {
   data: {
+    id: string;
     email: string;
     fullName: string;
     accessToken: string;
+    avatar: string;
     tokenExpireAt: string;
     role: string;
   };

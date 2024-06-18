@@ -1,7 +1,10 @@
-const DOMAIN =
-  (process.env.BASE_API as string) || "http://localhost:8000/api/v1";
+const BASE_API = process.env.REACT_APP_BASE_API;
+const API_VERSION = "/api/v1";
+const DOMAIN = process.env.REACT_APP_BASE_API + API_VERSION;
 
 export const URI = {
+  BASE_API,
+  API_VERSION,
   DOMAIN,
 
   // Authentication
@@ -17,10 +20,14 @@ export const URI = {
 
   // User
   FETCH_USER: "/users/:id",
+
+  // Message
+  SEND_MESSAGE: "/message/send/:conversation_id",
+
+  // Conversation
+  GET_ALL_CONVERSATIONS: "/conversation/list",
+  GET_MESSAGE_CONVERSATION: "/conversation/:conversation_id/messages",
 };
-const ADMIN_ROLE = "admin";
-const NORMAL_ROLE = "normal";
-export const ROLES = { ADMIN_ROLE, NORMAL_ROLE };
 
 export const NON_AUTHORIZATION_API = [URI.FORGOT_PASSWORD, URI.LOGIN];
 

@@ -1,9 +1,11 @@
-import { Toolbar, Typography } from "@mui/material";
+import { Avatar, Box, Grid, Toolbar, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import moment from "moment";
+import { useAuth } from "../../hooks";
 
 function Header() {
   const [today, setToday] = useState(moment());
+  const { user } = useAuth();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -14,21 +16,51 @@ function Header() {
   }, []);
 
   return (
-    <Toolbar
-      variant="dense"
+    <Grid
       sx={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        alignContent: "center",
         color: "white",
+        display: "flex",
+        alignContent: "center",
+        alignItems: "center",
+        height: "100%",
       }}
-      disableGutters
+      item
+      xs={12}
     >
-      <a>{today.format("dddd, MMMM Do YYYY, h:mm:ss a")}</a>
-    </Toolbar>
+      <Grid item xs={1}></Grid>
+      <Grid
+        item
+        xs={9}
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Avatar
+            src={user?.avatar}
+            sx={{
+              height: "30px",
+              width: "30px",
+              mx: "7px",
+            }}
+          />
+          <Typography align="left">Hello {user?.fullName}</Typography>
+        </Box>
+        <Typography align="center">
+          {today.format("dddd, MMMM Do YYYY, h:mm:ss a")}
+        </Typography>
+        <Typography align="right"></Typography>
+      </Grid>
+    </Grid>
   );
 }
 
