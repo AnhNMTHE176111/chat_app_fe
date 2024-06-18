@@ -26,6 +26,7 @@ import AddEmojiPage from "../pages/Admin/EmojiManage/AddEmoji";
 import AddEmoji from "../pages/Admin/EmojiManage/AddEmoji";
 import EditEmoji from "../pages/Admin/EmojiManage/EditEmoji";
 import EditUser from "../pages/Admin/UserManage/EditUser";
+import { logout } from "../services";
 // import UserManager from "../pages/Admin/UserManage";
 export const routes: RouteObject[] = [
   /** Unauthenticated Route */
@@ -97,10 +98,6 @@ export const routes: RouteObject[] = [
     errorElement: <NotFoundPage />,
     children: [
       {
-        path: "/home",
-        element: <App />,
-      },
-      {
         path: "/",
         element: <ChatPage />,
       },
@@ -113,8 +110,8 @@ export const routes: RouteObject[] = [
         element: <CallPage />,
       },
       {
-        path: "/about",
-        element: <App />,
+        path: "/logout",
+        element: <div>Logout...</div>,
       },
     ],
   },
@@ -125,15 +122,13 @@ export const routes: RouteObject[] = [
     element: (
       // <AuthGuard>
       // <RoleBasedGuard accessibleRoles={[ROLES.ADMIN_ROLE]}>
-      <Outlet />
+      <App>
+        <Outlet />
+      </App>
       // </RoleBasedGuard>
       // </AuthGuard>
     ),
     children: [
-      {
-        path: "",
-        element: <App />,
-      },
       {
         path: "dashboard",
         element: <Dashboard />,

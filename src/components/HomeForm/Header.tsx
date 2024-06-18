@@ -48,7 +48,7 @@ function Header() {
           <Avatar
             src={user?.avatar}
             sx={{
-              height: "30px",
+              height: "30px", 
               width: "30px",
               mx: "7px",
             }}

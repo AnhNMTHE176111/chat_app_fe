@@ -10,14 +10,21 @@ import BarChartIcon from "@mui/icons-material/BarChart";
 import LayersIcon from "@mui/icons-material/Layers";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import { Link } from "react-router-dom";
+
+ // doSomth
 export const mainListItems = (
   <React.Fragment>
-    <ListItemButton>
-      <ListItemIcon>
-        <DashboardIcon />
-      </ListItemIcon>
-      <ListItemText primary="Dashboard" />
-    </ListItemButton>
+    <Link
+      to="/admin/dashboard"
+      style={{ textDecoration: "none", color: "inherit" }}
+    >
+      <ListItemButton>
+        <ListItemIcon>
+          <DashboardIcon />
+        </ListItemIcon>
+        <ListItemText primary="Dashboard" />
+      </ListItemButton>
+    </Link>
     <Link
       to="/admin/manage-emoji"
       style={{ textDecoration: "none", color: "inherit" }}
