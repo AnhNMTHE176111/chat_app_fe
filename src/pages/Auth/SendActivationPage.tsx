@@ -8,10 +8,7 @@ import {
 } from "../../components";
 import { NavLink } from "react-router-dom";
 import { SubmitHandler, useForm } from "react-hook-form";
-import {
-  SendActivationParams,
-  sendActivation,
-} from "../../services";
+import { SendActivationParams, sendActivation } from "../../services";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import {
   hideNotificationAction,

@@ -4,29 +4,11 @@ import { useForm } from "react-hook-form";
 import { SearchParams } from "../../../services";
 import { useEffect, useState } from "react";
 import { getAllConversation } from "../../../services";
+import { useMessage } from "../../../hooks";
 
 export function HistoryChat() {
   const { control, handleSubmit } = useForm<SearchParams>();
-  const [conversations, setConversations] = useState<any[]>([]);
-
-  const data = [
-    {
-      name: "name 1",
-      message: "title 1",
-      time: "10:00",
-      online: true,
-      unread: true,
-      id: "1",
-    },
-    {
-      name: "name 2",
-      message: "title 2",
-      time: "10:00",
-      online: false,
-      unread: false,
-      id: "2",
-    },
-  ];
+  const { conversations, setConversations } = useMessage();
 
   useEffect(() => {
     getAllConversation()

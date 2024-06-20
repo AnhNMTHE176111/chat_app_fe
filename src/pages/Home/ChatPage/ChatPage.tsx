@@ -1,9 +1,10 @@
 import React, { useEffect } from "react";
 import HomeLayout from "../../../layouts/HomeLayout";
-import { Divider, Grid } from "@mui/material";
+import { Divider, Drawer, Grid } from "@mui/material";
 import HistoryChat from "./HistoryChat";
 import Conversation from "./Conversation";
 import { useParams } from "react-router-dom";
+import { useDrawerState } from "../../../hooks";
 
 export function ChatPage() {
   const { id } = useParams<{ id: string }>();

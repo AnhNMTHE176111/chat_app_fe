@@ -33,7 +33,6 @@ export const SocketContextProvider: FC<{ children: ReactNode }> = ({
         },
       });
       newSocket.on("getOnlineUsers", (data) => {
-        console.log("getOnlineUsers", data);
         setOnlineUsers(data);
       });
       setSocket(newSocket);

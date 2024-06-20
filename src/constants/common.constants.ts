@@ -8,4 +8,11 @@ export const SINGLE_CONVERSATION = "single";
 export const GROUP_CONVERSATION = "group";
 const ADMIN_ROLE = "admin";
 const NORMAL_ROLE = "normal";
-export const ROLES = { ADMIN_ROLE, NORMAL_ROLE };
+export const ROLES = { ADMIN_ROLE: "admin", NORMAL_ROLE: "normal" };
+export const MESSAGE_TYPE = {
+  VOICE: "voice",
+  TEXT: "text",
+  IMAGE: "image",
+  FILE: "file",
+};
+export const DOCUMENT_TITLE = "Chat App";
