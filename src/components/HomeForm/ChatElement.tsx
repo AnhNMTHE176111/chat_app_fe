@@ -9,6 +9,7 @@ import {
 } from "../../constants";
 import { AvatarOnline } from "./AvatarOnline";
 import moment from "moment";
+import { SOCKET_EVENT } from "../../constants";
 
 const StyledChatBox = styled(Box)(({ theme }) => ({
   "&:hover": {
@@ -62,7 +63,7 @@ export const ChatElement = ({ data }: { data: any }) => {
 
   useEffect(() => {
     if (id && latestMsg.conversation_id == id && !isRead) {
-      socket.emit("read-message", {
+      socket.emit(SOCKET_EVENT.READ_MESSAGE, {
         userId: user?.id,
         messageId: latestMsg._id,
         createdAt: latestMsg.createdAt,

@@ -32,6 +32,7 @@ import CallIcon from "@mui/icons-material/Call";
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
 import EmojiPicker from "emoji-picker-react";
+import { SOCKET_EVENT } from "../../../constants";
 
 const drawerWidth = 300;
 
@@ -84,7 +85,7 @@ export function Conversation() {
       content: message,
       receiver: receiver,
     }).then((result: any) => {
-      socket?.emit("send-message", { message: message });
+      socket?.emit(SOCKET_EVENT.SEND_MESSAGE, { message: message });
       setMessage("");
       setLatestMessage(result.data);
       setNewMessage(result.data);
