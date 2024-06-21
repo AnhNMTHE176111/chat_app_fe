@@ -20,13 +20,17 @@ export const MessageContextProvider = ({ children }: { children: any }) => {
       //   playNewMessageSound();
 
       // set latest message for conversation
-      for (let conversation of conversations) {
+      const updatedConversations = conversations.map((conversation: any) => {
         if (conversation._id == newMessage.conversation_id) {
-          conversation.latestMessage = newMessage;
           toggleTitle(`${conversation.title} send new message`);
-          break;
+          return {
+            ...conversation,
+            latestMessage: newMessage,
+          };
         }
-      }
+        return conversation;
+      });
+      setConversations(updatedConversations);
 
       // set new message for conversation if user is in a conversation
       if (id && newMessage.conversation_id == id) {

@@ -27,6 +27,7 @@ export const URI = {
   // Conversation
   GET_ALL_CONVERSATIONS: "/conversation/list",
   GET_MESSAGE_CONVERSATION: "/conversation/:conversation_id/messages",
+  LOAD_MORE_MESSAGE_CONVERSATION: "/conversation/:conversation_id/messages/loadmore",
 };
 
 export const NON_AUTHORIZATION_API = [URI.FORGOT_PASSWORD, URI.LOGIN];

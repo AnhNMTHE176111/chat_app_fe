@@ -5,10 +5,11 @@ import { SearchParams } from "../../../services";
 import { useEffect, useState } from "react";
 import { getAllConversation } from "../../../services";
 import { useMessage } from "../../../hooks";
+import moment from "moment";
 
 export function HistoryChat() {
   const { control, handleSubmit } = useForm<SearchParams>();
-  const { conversations, setConversations } = useMessage();
+  const { conversations, setConversations, messages } = useMessage();
 
   useEffect(() => {
     getAllConversation()
@@ -21,6 +22,20 @@ export function HistoryChat() {
         console.error("Error fetching conversations:", error);
       });
   }, []);
+
+  useEffect(() => {
+    if (conversations.length > 0) {
+      const sortedConversations = [...conversations].sort((a, b) => {
+        if (a.latestMessage && b.latestMessage) {
+          return moment(b.latestMessage.createdAt).diff(
+            moment(a.latestMessage.createdAt)
+          );
+        }
+        return 0;
+      });
+      setConversations(sortedConversations);
+    }
+  }, [conversations, setConversations]);
 
   return (
     <Grid item xs={12} sx={{ height: "100%" }}>

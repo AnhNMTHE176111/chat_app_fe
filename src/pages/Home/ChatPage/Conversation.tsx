@@ -3,11 +3,9 @@ import {
   Box,
   Button,
   Container,
-  Drawer,
   FormControl,
   Grid,
   IconButton,
-  Input,
   InputBase,
   List,
   ListItem,
@@ -20,10 +18,13 @@ import {
 import { AttachFile, Send } from "@mui/icons-material";
 import { useLocation, useParams } from "react-router-dom";
 import React, { useEffect, useRef, useState } from "react";
-import { getMessagesConversation, sendMessage } from "../../../services";
+import {
+  getMessagesConversation,
+  loadMoreMessageConversation,
+  sendMessage,
+} from "../../../services";
 import { AvatarOnline } from "../../../components";
 import { useAuth, useDrawerState, useMessage, useSocket } from "../../../hooks";
-import notificationSound from "../../../assets/sounds/sounds_notification.mp3";
 import moment from "moment";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SearchIcon from "@mui/icons-material/Search";
@@ -31,29 +32,39 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import CallIcon from "@mui/icons-material/Call";
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
-import EmojiPicker from "emoji-picker-react";
 import { SOCKET_EVENT } from "../../../constants";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 const drawerWidth = 300;
 
 export function Conversation() {
-  /** config conversation */
   const location = useLocation();
   const { conversation } = location.state || {};
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<string>();
   const { onlineUsers, socket } = useSocket();
   const { user } = useAuth();
   const [isOnline, setIsOnline] = useState<boolean>(
     conversation?.online ? conversation?.online : false
   );
 
-  /** config message */
+  const topMessageRef = useRef<any>();
+  const chatContainerRef = useRef<any>();
+  const observer = useRef<any>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [receiver, setReceiver] = useState();
-  // const [messages, setMessages] = useState<any[]>([]);
   const [message, setMessage] = useState("");
+  const [isLoadMoreMsg, setIsLoadMoreMsg] = useState(false);
   const lastMessageRef = useRef<HTMLElement>(null);
-  const { newMessage, setNewMessage, messages, setMessages, setLatestMessage } =
-    useMessage();
+  const {
+    newMessage,
+    setNewMessage,
+    messages,
+    setMessages,
+    latestMessage,
+    setLatestMessage,
+    conversations,
+    setConversations,
+  } = useMessage();
   const { handleToggleDrawer, open } = useDrawerState();
 
   useEffect(() => {
@@ -76,21 +87,77 @@ export function Conversation() {
     }
   }, [id]);
 
-  useEffect(() => {
-    lastMessageRef.current?.scrollIntoView({ behavior: "auto" });
-  }, [messages]);
-
   const handleSendMessage = () => {
     sendMessage(conversation?._id, {
       content: message,
       receiver: receiver,
     }).then((result: any) => {
       socket?.emit(SOCKET_EVENT.SEND_MESSAGE, { message: message });
+
+      const updatedConversations = conversations.map((conversation: any) => {
+        if (conversation._id == id) {
+          return {
+            ...conversation,
+            latestMessage: result.data,
+          };
+        }
+        return conversation;
+      });
+      setConversations(updatedConversations);
       setMessage("");
       setLatestMessage(result.data);
       setNewMessage(result.data);
       setMessages((prev: any) => [...prev, result.data]);
     });
+  };
+
+  /** Infinite Scroll */
+  // useEffect(() => {
+  //   if (observer.current) {
+  //     observer.current.disconnect();
+  //     console.log(observer.current);
+  //   }
+  //   observer.current = new IntersectionObserver(
+  //     (entries) => {
+  //       if (entries[0].isIntersecting) {
+  //         loadMoreData();
+  //       }
+  //     },
+  //     {
+  //       root: chatContainerRef.current,
+  //       threshold: 1,
+  //       rootMargin: "0px 1px",
+  //     }
+  //   );
+  //   if (topMessageRef.current) {
+  //     observer.current.observe(topMessageRef.current);
+  //   }
+  //   return () => {
+  //     if (observer.current) observer.current.disconnect();
+  //   };
+  // }, [topMessageRef, messages]);
+
+  useEffect(() => {
+    if (!isLoadMoreMsg) {
+      lastMessageRef.current?.scrollIntoView({ behavior: "auto" });
+    }
+  }, [messages, isLoadMoreMsg]);
+
+  const loadMoreData = () => {
+    if (id) {
+      setIsLoading(true);
+      setIsLoadMoreMsg(true);
+      return loadMoreMessageConversation(id, messages[0].createdAt)
+        .then((result: any) => {
+          setMessages((prev: any) => [...result.data, ...prev]);
+        })
+        .catch((error) => {
+          console.log("error", error);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
   };
 
   return (
@@ -172,15 +239,25 @@ export function Conversation() {
         {/* MESSAGE CONTAINER */}
         <Grid item xs={12} sx={{ height: "80%" }}>
           <Container
+            ref={chatContainerRef}
             sx={{
               flex: 1,
               display: "flex",
               flexDirection: "column",
               overflow: "auto",
               maxHeight: "100%",
-              // width: open ? "100%" : `calc(100% - ${drawerWidth}px)`,
             }}
+            id="scrollableDiv"
           >
+            {/* <InfiniteScroll
+              dataLength={messages.length}
+              next={loadMoreData}
+              style={{ display: "flex", flexDirection: "column-reverse" }} //To put endMessage and loader to the top.
+              inverse={true} //
+              hasMore={true}
+              loader={<h4>Loading...</h4>}
+              scrollableTarget="scrollableDiv"
+            > */}
             <List dense={true}>
               {messages.map((message: any, index: any) => {
                 const isMyMessage = message.sender_id._id == user?.id;
@@ -199,6 +276,7 @@ export function Conversation() {
                       display: "flex",
                       justifyContent: isMyMessage ? "flex-end" : "flex-start",
                     }}
+                    ref={topMessageRef}
                   >
                     {!isMyMessage && isLastFromSender ? (
                       <ListItemAvatar>
@@ -221,7 +299,11 @@ export function Conversation() {
                     >
                       <Tooltip title={fullTime}>
                         <ListItemText
-                          ref={lastMessageRef}
+                          ref={
+                            index === messages.length - 1
+                              ? lastMessageRef
+                              : null
+                          }
                           secondary={
                             isLastFromSender && (
                               <React.Fragment>
@@ -242,6 +324,7 @@ export function Conversation() {
                 );
               })}
             </List>
+            {/* </InfiniteScroll> */}
           </Container>
         </Grid>
         {/* INPUT MESSAGE */}
@@ -279,7 +362,6 @@ export function Conversation() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                 />
-                {/* <EmojiPicker /> */}
                 <IconButton type="submit" sx={{ p: "10px" }} aria-label="send">
                   <Send />
                 </IconButton>
@@ -290,7 +372,7 @@ export function Conversation() {
       </Grid>
       {open && (
         <Grid item xs={open ? 4 : 0} sx={{ height: "100%" }}>
-          Hello
+          Hello {isLoading ? "loading" : "not loading"}
         </Grid>
       )}
     </Grid>
