@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Container,
+  Divider,
   FormControl,
   Grid,
   IconButton,
@@ -10,11 +11,18 @@ import {
   List,
   ListItem,
   ListItemAvatar,
+  ListItemButton,
+  ListItemIcon,
   ListItemText,
+  Menu,
+  MenuItem,
   Paper,
+  Stack,
+  SxProps,
   Tooltip,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { AttachFile, Send } from "@mui/icons-material";
 import { useLocation, useParams } from "react-router-dom";
 import React, { useEffect, useRef, useState } from "react";
@@ -32,8 +40,40 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import CallIcon from "@mui/icons-material/Call";
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
+import ImageIcon from "@mui/icons-material/Image";
+import DescriptionIcon from "@mui/icons-material/Description";
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
+import ViewSidebarOutlinedIcon from "@mui/icons-material/ViewSidebarOutlined";
+import ArrowBackIosNewOutlinedIcon from "@mui/icons-material/ArrowBackIosNewOutlined";
+import EmojiEmotionsOutlinedIcon from "@mui/icons-material/EmojiEmotionsOutlined";
 import { SOCKET_EVENT } from "../../../constants";
 import InfiniteScroll from "react-infinite-scroll-component";
+import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
+
+const sxCenterColumnFlex: SxProps = {
+  display: "flex",
+  flexDirection: "column",
+  alignContent: "center",
+  alignItems: "center",
+};
+
+const sxCenterRowFlex: SxProps = {
+  display: "flex",
+  alignContent: "center",
+  alignItems: "center",
+};
+
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
 
 const drawerWidth = 300;
 
@@ -67,6 +107,21 @@ export function Conversation() {
   } = useMessage();
   const { handleToggleDrawer, open } = useDrawerState();
 
+  /** Conversation Options */
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const openEmoji = Boolean(anchorEl);
+  const handleClickEmoji = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleCloseEmoji = () => {
+    setAnchorEl(null);
+  };
+
+  const [openMedia, setOpenMedia] = useState(false);
+  const [openFile, setOpenFile] = useState(false);
+  const [medias, setMedias] = useState<any[]>();
+  const [files, setFiles] = useState<any[]>();
+
   useEffect(() => {
     const onlineUsersInConversation = conversation?.participants.filter(
       (participant: any) =>
@@ -81,6 +136,8 @@ export function Conversation() {
 
   useEffect(() => {
     if (id) {
+      handleBackToConversationInforTab();
+      setMessage("");
       getMessagesConversation(id).then((data: any) => {
         setMessages(data.data);
       });
@@ -109,6 +166,23 @@ export function Conversation() {
       setNewMessage(result.data);
       setMessages((prev: any) => [...prev, result.data]);
     });
+  };
+
+  const handleEmojiClick = (emojiData: EmojiClickData, event: MouseEvent) => {
+    setMessage((prevMessage) => prevMessage + emojiData.emoji);
+  };
+
+  const handleKeyPress = (event: any) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const handleInputChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+  ) => {
+    setMessage(event.target.value);
   };
 
   /** Infinite Scroll */
@@ -160,6 +234,19 @@ export function Conversation() {
     }
   };
 
+  const handleOpenMedia = () => {
+    setOpenMedia(!openMedia);
+  };
+
+  const handleOpenFile = () => {
+    setOpenFile(!openFile);
+  };
+
+  const handleBackToConversationInforTab = () => {
+    setOpenMedia(false);
+    setOpenFile(false);
+  };
+
   return (
     <Grid container sx={{ height: "100%" }}>
       <Grid
@@ -193,6 +280,7 @@ export function Conversation() {
           >
             <AvatarOnline
               srcImage={conversation?.picture}
+              title={conversation?.title}
               isOnline={isOnline}
             />
             <ListItemText
@@ -209,11 +297,6 @@ export function Conversation() {
                 <PersonAddIcon />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Search Message">
-              <IconButton>
-                <SearchIcon />
-              </IconButton>
-            </Tooltip>
             <Tooltip title="Call">
               <IconButton>
                 <CallIcon />
@@ -224,16 +307,19 @@ export function Conversation() {
                 <VideoCameraFrontIcon />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Notification">
-              <IconButton>
-                <NotificationsIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Conversation Information">
-              <IconButton onClick={handleToggleDrawer}>
-                <ViewSidebarIcon />
-              </IconButton>
-            </Tooltip>
+            {open ? (
+              <Tooltip title="Close Conversation Information">
+                <IconButton onClick={handleToggleDrawer}>
+                  <ViewSidebarOutlinedIcon />
+                </IconButton>
+              </Tooltip>
+            ) : (
+              <Tooltip title="Open Conversation Information">
+                <IconButton onClick={handleToggleDrawer}>
+                  <ViewSidebarIcon />
+                </IconButton>
+              </Tooltip>
+            )}
           </Box>
         </Grid>
         {/* MESSAGE CONTAINER */}
@@ -314,9 +400,16 @@ export function Conversation() {
                             )
                           }
                         >
-                          <Typography variant="body1">
-                            {message.content}
-                          </Typography>
+                          {message.content
+                            .split("\n")
+                            .map((text: any, index: any) => (
+                              <React.Fragment key={index}>
+                                <Typography variant="body1">
+                                  {text}
+                                  <br />
+                                </Typography>
+                              </React.Fragment>
+                            ))}
                         </ListItemText>
                       </Tooltip>
                     </Box>
@@ -327,6 +420,7 @@ export function Conversation() {
             {/* </InfiniteScroll> */}
           </Container>
         </Grid>
+
         {/* INPUT MESSAGE */}
         <Grid
           container
@@ -339,10 +433,11 @@ export function Conversation() {
             justifyContent: "center",
           }}
         >
-          <Container>
-            <FormControl fullWidth sx={{ margin: "15px" }}>
+          <Container sx={{ height: "wrap-content" }}>
+            <FormControl fullWidth sx={{ height: "wrap-content" }}>
               <Paper
                 component="form"
+                elevation={5}
                 sx={{
                   p: "2px 4px",
                   display: "flex",
@@ -353,26 +448,230 @@ export function Conversation() {
                   return handleSendMessage();
                 }}
               >
-                <Button>
-                  <AttachFile />
-                </Button>
+                {/* CHOOSE FILE BUTTON */}
+                <Tooltip title="Attach File">
+                  <Button role={undefined} component="label">
+                    <AttachFile />
+                    <VisuallyHiddenInput
+                      type="file"
+                      accept="image/*, .doc, .docx, .pdf"
+                    />
+                  </Button>
+                </Tooltip>
+                {/* INPUT MESSAGE */}
                 <InputBase
                   sx={{ ml: 1, flex: 1 }}
                   placeholder="Aa"
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={handleInputChange}
+                  onKeyPress={handleKeyPress}
+                  multiline
+                  maxRows={3}
                 />
-                <IconButton type="submit" sx={{ p: "10px" }} aria-label="send">
-                  <Send />
-                </IconButton>
+                {/* EMOJI BUTTON */}
+                <Menu
+                  id="basic-menu"
+                  open={openEmoji}
+                  anchorEl={anchorEl}
+                  onClose={handleCloseEmoji}
+                  MenuListProps={{
+                    "aria-labelledby": "basic-button",
+                  }}
+                  anchorOrigin={{
+                    vertical: "top",
+                    horizontal: "center",
+                  }}
+                  transformOrigin={{
+                    vertical: "bottom",
+                    horizontal: "center",
+                  }}
+                >
+                  <EmojiPicker onEmojiClick={handleEmojiClick} />
+                </Menu>
+                <Tooltip title="Emoji">
+                  <IconButton
+                    id="basic-button"
+                    aria-controls={openEmoji ? "basic-menu" : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={openEmoji ? "true" : undefined}
+                    onClick={handleClickEmoji}
+                  >
+                    <EmojiEmotionsOutlinedIcon />
+                  </IconButton>
+                </Tooltip>
+                {/* SEND MESSAGE BUTTON */}
+                <Tooltip title="Send Message">
+                  <IconButton
+                    type="submit"
+                    sx={{ p: "10px" }}
+                    aria-label="send"
+                  >
+                    <Send />
+                  </IconButton>
+                </Tooltip>
               </Paper>
             </FormControl>
           </Container>
         </Grid>
       </Grid>
       {open && (
-        <Grid item xs={open ? 4 : 0} sx={{ height: "100%" }}>
-          Hello {isLoading ? "loading" : "not loading"}
+        <Grid
+          container
+          item
+          xs={open ? 4 : 0}
+          sx={{
+            height: "100%",
+          }}
+        >
+          {!openMedia && !openFile && (
+            <Container
+              maxWidth="sm"
+              sx={{
+                height: "100%",
+                ...sxCenterColumnFlex,
+              }}
+            >
+              <Box sx={{ ...sxCenterColumnFlex, my: 2, width: "100%" }}>
+                <AvatarOnline
+                  srcImage={conversation?.picture}
+                  title={conversation?.title}
+                  isOnline={isOnline}
+                  sx={{
+                    width: 100,
+                    height: 100,
+                  }}
+                />
+                <Typography textAlign={"center"} variant="h6">
+                  {conversation?.title}
+                </Typography>
+                <Typography
+                  textAlign={"center"}
+                  color={isOnline ? "green" : "gray"}
+                  variant="subtitle1"
+                >
+                  {isOnline ? "Online" : "Offline"}
+                </Typography>
+
+                <Box sx={{ my: 1 }}>
+                  <Tooltip title="Add Friend">
+                    <IconButton>
+                      <PersonAddIcon fontSize="large" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Search Message">
+                    <IconButton>
+                      <SearchIcon fontSize="large" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Notification">
+                    <IconButton>
+                      <NotificationsIcon fontSize="large" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={`Create Group With ${conversation.title}`}>
+                    <IconButton>
+                      <GroupAddIcon fontSize="large" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+
+                <Box sx={{ width: "100%" }}>
+                  <List>
+                    <Divider />
+                    <Paper elevation={1}>
+                      <ListItemButton
+                        // selected={selectedIndex === 0}
+                        onClick={handleOpenMedia}
+                        sx={{
+                          borderRadius: "5px",
+                          my: 2,
+                        }}
+                      >
+                        <ListItemIcon>
+                          <ImageIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Images / Videos" />
+                      </ListItemButton>
+                    </Paper>
+                    <Paper elevation={1}>
+                      <ListItemButton
+                        // selected={selectedIndex === 1}
+                        onClick={handleOpenFile}
+                        sx={{
+                          borderRadius: "5px",
+                          my: 2,
+                        }}
+                      >
+                        <ListItemIcon>
+                          <DescriptionIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Files" />
+                      </ListItemButton>
+                    </Paper>
+                    <Divider />
+                  </List>
+                </Box>
+              </Box>
+            </Container>
+          )}
+
+          {openMedia && (
+            <Container
+              maxWidth="sm"
+              sx={{
+                height: "100%",
+                ...sxCenterColumnFlex,
+              }}
+            >
+              <Box sx={{ ...sxCenterColumnFlex, my: 3, width: "100%" }}>
+                <Box
+                  sx={{
+                    ...sxCenterRowFlex,
+                    justifyContent: "left",
+                    width: "100%",
+                    gap: "20px",
+                  }}
+                >
+                  <IconButton onClick={handleBackToConversationInforTab}>
+                    <ArrowBackIosNewOutlinedIcon />
+                  </IconButton>
+                  <Typography variant="h5" justifyContent={"center"}>
+                    Medias Tab
+                  </Typography>
+                  <Box></Box>
+                </Box>
+              </Box>
+            </Container>
+          )}
+
+          {openFile && (
+            <Container
+              maxWidth="sm"
+              sx={{
+                height: "100%",
+                ...sxCenterColumnFlex,
+              }}
+            >
+              <Box sx={{ ...sxCenterColumnFlex, my: 3, width: "100%" }}>
+                <Box
+                  sx={{
+                    ...sxCenterRowFlex,
+                    justifyContent: "left",
+                    width: "100%",
+                    gap: "20px",
+                  }}
+                >
+                  <IconButton onClick={handleBackToConversationInforTab}>
+                    <ArrowBackIosNewOutlinedIcon />
+                  </IconButton>
+                  <Typography variant="h5" justifyContent={"center"}>
+                    Files Tab
+                  </Typography>
+                  <Box></Box>
+                </Box>
+              </Box>
+            </Container>
+          )}
         </Grid>
       )}
     </Grid>

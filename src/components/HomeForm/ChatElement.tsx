@@ -158,6 +158,7 @@ export const ChatElement = ({ data }: { data: any }) => {
         <Stack direction={"row"} spacing={2} sx={{ width: "100%" }}>
           <AvatarOnline
             isOnline={conversation.online}
+            title={conversation.title}
             srcImage={conversation.picture}
           />
           <Stack spacing={0.3} sx={{ width: "100%" }}>
