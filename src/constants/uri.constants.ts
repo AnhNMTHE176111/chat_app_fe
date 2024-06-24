@@ -27,6 +27,8 @@ export const URI = {
   // Conversation
   GET_ALL_CONVERSATIONS: "/conversation/list",
   GET_MESSAGE_CONVERSATION: "/conversation/:conversation_id/messages",
+  GET_MEDIA_CONVERSATION: "/conversation/:conversation_id/medias",
+  GET_FILE_CONVERSATION: "/conversation/:conversation_id/files",
   LOAD_MORE_MESSAGE_CONVERSATION: "/conversation/:conversation_id/messages/loadmore",
 };
 

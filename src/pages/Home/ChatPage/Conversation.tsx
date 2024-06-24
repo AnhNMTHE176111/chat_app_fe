@@ -1,12 +1,17 @@
 import {
   Avatar,
+  Badge,
   Box,
   Button,
+  Chip,
+  CircularProgress,
   Container,
   Divider,
   FormControl,
   Grid,
   IconButton,
+  ImageList,
+  ImageListItem,
   InputBase,
   List,
   ListItem,
@@ -25,14 +30,28 @@ import {
 import { styled } from "@mui/material/styles";
 import { AttachFile, Send } from "@mui/icons-material";
 import { useLocation, useParams } from "react-router-dom";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  getAllFilesConversation,
+  getAllMediasConversation,
   getMessagesConversation,
   loadMoreMessageConversation,
   sendMessage,
+  storage,
+  storageRef,
 } from "../../../services";
-import { AvatarOnline } from "../../../components";
-import { useAuth, useDrawerState, useMessage, useSocket } from "../../../hooks";
+import {
+  AvatarOnline,
+  CircularProgressWithLabel,
+  DialogViewImage,
+} from "../../../components";
+import {
+  useAuth,
+  useDrawerState,
+  useMessage,
+  useSocket,
+  useUploadFile,
+} from "../../../hooks";
 import moment from "moment";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SearchIcon from "@mui/icons-material/Search";
@@ -46,9 +65,13 @@ import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import ViewSidebarOutlinedIcon from "@mui/icons-material/ViewSidebarOutlined";
 import ArrowBackIosNewOutlinedIcon from "@mui/icons-material/ArrowBackIosNewOutlined";
 import EmojiEmotionsOutlinedIcon from "@mui/icons-material/EmojiEmotionsOutlined";
-import { SOCKET_EVENT } from "../../../constants";
+import DeleteIcon from "@mui/icons-material/Delete";
+import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
+import { MESSAGE_TYPE, SOCKET_EVENT } from "../../../constants";
 import InfiniteScroll from "react-infinite-scroll-component";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
+import * as _ from "lodash";
+import { saveAs } from "file-saver";
 
 const sxCenterColumnFlex: SxProps = {
   display: "flex",
@@ -75,6 +98,28 @@ const VisuallyHiddenInput = styled("input")({
   width: 1,
 });
 
+const ImagePreview = ({ file, sx }: { file: File; sx?: SxProps }) => {
+  const [imageUrl, setImageUrl] = useState<string>();
+
+  // Handle image URL creation and cleanup
+  useEffect(() => {
+    const url = URL.createObjectURL(file);
+    setImageUrl(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  return (
+    <ImageListItem
+      sx={{
+        ...sx,
+      }}
+    >
+      <img src={imageUrl} alt="Preview" />
+    </ImageListItem>
+  );
+};
+
 const drawerWidth = 300;
 
 export function Conversation() {
@@ -91,10 +136,21 @@ export function Conversation() {
   const chatContainerRef = useRef<any>();
   const observer = useRef<any>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loadingImage, setLoadingImage] = useState<boolean>(true);
+  const [loadingImageFail, setLoadingImageFail] = useState<boolean>(false);
   const [receiver, setReceiver] = useState();
   const [message, setMessage] = useState("");
+  const {
+    file,
+    setFile,
+    progressUpload,
+    downloadFileURL,
+    handleUploadFile,
+    fileDestination,
+    setFileDestination,
+  } = useUploadFile();
   const [isLoadMoreMsg, setIsLoadMoreMsg] = useState(false);
-  const lastMessageRef = useRef<HTMLElement>(null);
+  const lastMessageRef = useRef<any>(null);
   const {
     newMessage,
     setNewMessage,
@@ -107,6 +163,17 @@ export function Conversation() {
   } = useMessage();
   const { handleToggleDrawer, open } = useDrawerState();
 
+  /** Preview Image */
+  const [openPreviewImage, setOpenPreviewImage] = useState<boolean>(false);
+  const [previewImageLink, setPreviewImageLink] = useState<string>("");
+  const handleClosePreviewImageDialog = () => {
+    setOpenPreviewImage(false);
+  };
+  const handleOpenPreviewImageDialog = (imageLink: string) => {
+    setOpenPreviewImage(true);
+    setPreviewImageLink(imageLink);
+  };
+
   /** Conversation Options */
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const openEmoji = Boolean(anchorEl);
@@ -117,6 +184,7 @@ export function Conversation() {
     setAnchorEl(null);
   };
 
+  /** Tab Option Conversation */
   const [openMedia, setOpenMedia] = useState(false);
   const [openFile, setOpenFile] = useState(false);
   const [medias, setMedias] = useState<any[]>();
@@ -138,16 +206,56 @@ export function Conversation() {
     if (id) {
       handleBackToConversationInforTab();
       setMessage("");
+      setLoadingImage(true);
       getMessagesConversation(id).then((data: any) => {
         setMessages(data.data);
       });
     }
   }, [id]);
 
-  const handleSendMessage = () => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loadingImage) {
+        setLoadingImageFail(true);
+        setLoadingImage(false);
+      }
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [loadingImage]);
+
+  const handleImageLoad = () => {
+    setLoadingImage(false);
+    setLoadingImageFail(false);
+  };
+
+  const handleImageError = () => {
+    setLoadingImage(false);
+    setLoadingImageFail(true);
+  };
+
+  const handleSendMessage = async () => {
+    let messageType = "text";
+    let resultUpload = null;
+    if (file) {
+      try {
+        resultUpload = await handleUploadFile();
+      } catch (error) {
+        console.log(error);
+      }
+      messageType = MESSAGE_TYPE.FILE;
+      if (file.type.startsWith("image/")) {
+        messageType = MESSAGE_TYPE.IMAGE;
+      }
+    }
+
     sendMessage(conversation?._id, {
       content: message,
       receiver: receiver,
+      messageType: messageType,
+      attachmentLink: resultUpload?.url,
+      attachmentName: file?.name || null,
+      attachmentSize: resultUpload?.size,
     }).then((result: any) => {
       socket?.emit(SOCKET_EVENT.SEND_MESSAGE, { message: message });
 
@@ -162,6 +270,13 @@ export function Conversation() {
       });
       setConversations(updatedConversations);
       setMessage("");
+      if (messageType == MESSAGE_TYPE.FILE) {
+        setFiles((prev: any) => [...prev, result.data]);
+      }
+      if (messageType == MESSAGE_TYPE.IMAGE) {
+        setMedias((prev: any) => [...prev, result.data]);
+      }
+      setFile(null);
       setLatestMessage(result.data);
       setNewMessage(result.data);
       setMessages((prev: any) => [...prev, result.data]);
@@ -183,6 +298,15 @@ export function Conversation() {
     event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
   ) => {
     setMessage(event.target.value);
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setFile(event.target.files[0]);
+      setFileDestination(`conversation/${id}/${event.target.files[0].name}`);
+      setMessage("");
+      // handleUploadFile();
+    }
   };
 
   /** Infinite Scroll */
@@ -212,10 +336,10 @@ export function Conversation() {
   // }, [topMessageRef, messages]);
 
   useEffect(() => {
-    if (!isLoadMoreMsg) {
-      lastMessageRef.current?.scrollIntoView({ behavior: "auto" });
+    if (lastMessageRef.current) {
+      lastMessageRef.current.scrollIntoView({ behavior: "auto" });
     }
-  }, [messages, isLoadMoreMsg]);
+  }, [messages]);
 
   const loadMoreData = () => {
     if (id) {
@@ -235,11 +359,21 @@ export function Conversation() {
   };
 
   const handleOpenMedia = () => {
-    setOpenMedia(!openMedia);
+    if (id) {
+      setOpenMedia(true);
+      getAllMediasConversation(id).then((result) => {
+        setMedias(result.data);
+      });
+    }
   };
 
   const handleOpenFile = () => {
-    setOpenFile(!openFile);
+    if (id) {
+      setOpenFile(true);
+      getAllFilesConversation(id).then((result) => {
+        setFiles(result.data);
+      });
+    }
   };
 
   const handleBackToConversationInforTab = () => {
@@ -249,6 +383,11 @@ export function Conversation() {
 
   return (
     <Grid container sx={{ height: "100%" }}>
+      <DialogViewImage
+        open={openPreviewImage}
+        onClose={handleClosePreviewImageDialog}
+        image={previewImageLink}
+      />
       <Grid
         item
         xs={open ? 8 : 12}
@@ -378,44 +517,104 @@ export function Conversation() {
                         backgroundColor: isMyMessage ? "#bbdefb" : "#e0e0e0",
                         borderRadius: "8px",
                         width: "fit-content",
-                        maxWidth: "50%",
+                        maxWidth:
+                          message.messageType === MESSAGE_TYPE.IMAGE
+                            ? "30%"
+                            : "40%",
                         padding: "8px 12px",
                         wordWrap: "break-word",
                       }}
+                      ref={lastMessageRef}
                     >
-                      <Tooltip title={fullTime}>
-                        <ListItemText
-                          ref={
-                            index === messages.length - 1
-                              ? lastMessageRef
-                              : null
-                          }
-                          secondary={
-                            isLastFromSender && (
-                              <React.Fragment>
-                                <Typography variant="caption" align="center">
-                                  {time}
-                                </Typography>
-                              </React.Fragment>
-                            )
-                          }
-                        >
-                          {message.content
-                            .split("\n")
-                            .map((text: any, index: any) => (
-                              <React.Fragment key={index}>
-                                <Typography variant="body1">
-                                  {text}
-                                  <br />
-                                </Typography>
-                              </React.Fragment>
-                            ))}
-                        </ListItemText>
-                      </Tooltip>
+                      {message.messageType === MESSAGE_TYPE.IMAGE && (
+                        <Tooltip title={fullTime} placement="left-start">
+                          <Box
+                            component="div"
+                            sx={{
+                              width: "100%",
+                            }}
+                          >
+                            {loadingImage && (
+                              <Box
+                                sx={{
+                                  minHeight: "300px",
+                                  width: "200px",
+                                  ...sxCenterRowFlex,
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <CircularProgress color="secondary" />
+                              </Box>
+                            )}
+                            <img
+                              style={{
+                                width: "100%",
+                                height: "auto",
+                                objectFit: "cover",
+                                display: loadingImage ? "none" : "block",
+                              }}
+                              src={message.attachmentLink}
+                              alt={loadingImageFail ? "Image Fail" : "Image"}
+                              onLoad={handleImageLoad}
+                              onError={handleImageError}
+                              onClick={() =>
+                                handleOpenPreviewImageDialog(
+                                  message.attachmentLink
+                                )
+                              }
+                            />
+                          </Box>
+                        </Tooltip>
+                      )}
+
+                      {message.messageType === MESSAGE_TYPE.FILE && (
+                        <Box sx={{ ...sxCenterRowFlex }}>
+                          <Button
+                            variant="outlined"
+                            startIcon={<DescriptionIcon />}
+                            onClick={() => {
+                              saveAs(
+                                message.attachmentLink,
+                                message.attachmentName
+                              );
+                            }}
+                          >
+                            {message.attachmentName ?? "File"}
+                          </Button>
+                        </Box>
+                      )}
+
+                      {message.messageType === MESSAGE_TYPE.TEXT && (
+                        <Tooltip title={fullTime} placement="left-start">
+                          <ListItemText
+                            secondary={
+                              isLastFromSender && (
+                                <React.Fragment>
+                                  <Typography variant="caption" align="center">
+                                    {time}
+                                  </Typography>
+                                </React.Fragment>
+                              )
+                            }
+                          >
+                            {message.content
+                              .split("\n")
+                              .map((text: any, index: any) => (
+                                <React.Fragment key={index}>
+                                  <Typography variant="body1">
+                                    {text}
+                                    <br />
+                                  </Typography>
+                                </React.Fragment>
+                              ))}
+                          </ListItemText>
+                        </Tooltip>
+                      )}
                     </Box>
                   </ListItem>
                 );
               })}
+              <div ref={lastMessageRef} />
             </List>
             {/* </InfiniteScroll> */}
           </Container>
@@ -455,19 +654,61 @@ export function Conversation() {
                     <VisuallyHiddenInput
                       type="file"
                       accept="image/*, .doc, .docx, .pdf"
+                      onChange={handleFileChange}
                     />
                   </Button>
                 </Tooltip>
+
                 {/* INPUT MESSAGE */}
-                <InputBase
-                  sx={{ ml: 1, flex: 1 }}
-                  placeholder="Aa"
-                  value={message}
-                  onChange={handleInputChange}
-                  onKeyPress={handleKeyPress}
-                  multiline
-                  maxRows={3}
-                />
+
+                {/* PREVIEW FILE / IMAGE */}
+                {file && (
+                  <Box sx={{ ml: 1, flex: 1 }}>
+                    <Box sx={{ ...sxCenterRowFlex }}>
+                      {file.type.startsWith("image") ? (
+                        <ImagePreview
+                          sx={{
+                            maxWidth: "7%",
+                            maxHeight: "10%",
+                            objectFit: "cover",
+                          }}
+                          file={file}
+                        />
+                      ) : (
+                        <Chip
+                          icon={<InsertDriveFileIcon />}
+                          label={file.name}
+                          variant="outlined"
+                        />
+                      )}
+
+                      <IconButton
+                        aria-label="delete"
+                        onClick={() => setFile(null)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                )}
+
+                {/* TEXT INPUT */}
+                {!file && (
+                  <InputBase
+                    sx={{ ml: 1, flex: 1 }}
+                    placeholder="Aa"
+                    value={message}
+                    onChange={handleInputChange}
+                    onKeyPress={handleKeyPress}
+                    multiline
+                    maxRows={3}
+                  />
+                )}
+
+                {/* UPLOAD PROGRESS */}
+                {progressUpload && (
+                  <CircularProgressWithLabel value={progressUpload} />
+                )}
                 {/* EMOJI BUTTON */}
                 <Menu
                   id="basic-menu"
@@ -578,7 +819,7 @@ export function Conversation() {
                 <Box sx={{ width: "100%" }}>
                   <List>
                     <Divider />
-                    <Paper elevation={1}>
+                    <Paper elevation={0}>
                       <ListItemButton
                         // selected={selectedIndex === 0}
                         onClick={handleOpenMedia}
@@ -593,7 +834,7 @@ export function Conversation() {
                         <ListItemText primary="Images / Videos" />
                       </ListItemButton>
                     </Paper>
-                    <Paper elevation={1}>
+                    <Paper elevation={0}>
                       <ListItemButton
                         // selected={selectedIndex === 1}
                         onClick={handleOpenFile}
@@ -636,9 +877,33 @@ export function Conversation() {
                     <ArrowBackIosNewOutlinedIcon />
                   </IconButton>
                   <Typography variant="h5" justifyContent={"center"}>
-                    Medias Tab
+                    Media Tab
                   </Typography>
-                  <Box></Box>
+                </Box>
+
+                <Divider sx={{ width: "100%", my: 1 }} variant="middle" />
+                <Box>
+                  {medias && (
+                    <ImageList
+                      sx={{ width: "100%" }}
+                      cols={3}
+                      variant="quilted"
+                    >
+                      {medias.map((item) => (
+                        <ImageListItem key={item._id}>
+                          <img
+                            srcSet={`${item.attachmentLink}?w=480`}
+                            src={`${item.attachmentLink}?w=480`}
+                            alt={item.attachmentName}
+                            loading="lazy"
+                            onClick={() =>
+                              handleOpenPreviewImageDialog(item.attachmentLink)
+                            }
+                          />
+                        </ImageListItem>
+                      ))}
+                    </ImageList>
+                  )}
                 </Box>
               </Box>
             </Container>
@@ -667,7 +932,39 @@ export function Conversation() {
                   <Typography variant="h5" justifyContent={"center"}>
                     Files Tab
                   </Typography>
-                  <Box></Box>
+                </Box>
+                <Box sx={{ width: "100%" }}>
+                  <List>
+                    {files &&
+                      files.map((item, index) => (
+                        <>
+                          <ListItemButton
+                            key={item._id}
+                            sx={{ my: 0.5 }}
+                            onClick={() => {
+                              saveAs(item.attachmentLink, item.attachmentName);
+                            }}
+                          >
+                            <ListItemAvatar>
+                              <Avatar>
+                                <DescriptionIcon />
+                              </Avatar>
+                            </ListItemAvatar>
+                            <ListItemText
+                              primary={
+                                item.attachmentName.length > 24
+                                  ? `${item.attachmentName.slice(0, 24)}...`
+                                  : item.attachmentName
+                              }
+                              secondary={item.attachmentSize}
+                            />
+                          </ListItemButton>
+                          {index !== files.length - 1 && (
+                            <Divider variant="middle" />
+                          )}
+                        </>
+                      ))}
+                  </List>
                 </Box>
               </Box>
             </Container>

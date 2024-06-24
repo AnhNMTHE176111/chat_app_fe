@@ -6,8 +6,6 @@ export const USERNAME_REGEX =
 export const ACCESS_TOKEN_KEY_COOKIE = "access_token";
 export const SINGLE_CONVERSATION = "single";
 export const GROUP_CONVERSATION = "group";
-const ADMIN_ROLE = "admin";
-const NORMAL_ROLE = "normal";
 export const ROLES = { ADMIN_ROLE: "admin", NORMAL_ROLE: "normal" };
 export const MESSAGE_TYPE = {
   VOICE: "voice",
