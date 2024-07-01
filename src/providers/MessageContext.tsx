@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useState } from "react";
 import { useAuth, useSocket } from "../hooks";
 import { useParams } from "react-router-dom";
 import { playNewMessageSound, toggleTitle } from "../helpers/utils";
@@ -14,36 +14,46 @@ export const MessageContextProvider = ({ children }: { children: any }) => {
   const { user } = useAuth();
   const { id } = useParams<{ id: string }>();
 
-  useEffect(() => {
-    socket?.on("new-message", (dataNewMessage: any) => {
+  const handleMessageReceived = useCallback(
+    (dataNewMessage: any) => {
       const newMessage = dataNewMessage.newMessage;
-      //   playNewMessageSound();
 
-      // set latest message for conversation
-      const updatedConversations = conversations.map((conversation: any) => {
-        if (conversation._id == newMessage.conversation_id) {
-          toggleTitle(`${conversation.title} send new message`);
-          return {
-            ...conversation,
-            latestMessage: newMessage,
-          };
-        }
-        return conversation;
-      });
-      setConversations(updatedConversations);
+      // Update conversations with latest message
+      setConversations((prevConversations) =>
+        prevConversations.map((conversation) =>
+          conversation._id === newMessage.conversation_id
+            ? {
+                ...conversation,
+                latestMessage: newMessage,
+              }
+            : conversation
+        )
+      );
 
-      // set new message for conversation if user is in a conversation
-      if (id && newMessage.conversation_id == id) {
-        setMessages((prev) => [...prev, newMessage]);
+      // Update messages if user is in the conversation
+      if (id && newMessage.conversation_id === id) {
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
       }
+
+      // Update latest message
       setLatestMessage(newMessage);
       setNewMessage(newMessage);
-    });
+
+      // Toggle title with new message
+      toggleTitle(`${newMessage.conversation_title} sent a new message`);
+    },
+    [id]
+  );
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("new-message", handleMessageReceived);
 
     return () => {
-      socket?.off("new-message");
+      socket.off("new-message", handleMessageReceived);
     };
-  }, [socket, id, conversations]);
+  }, [socket, handleMessageReceived]);
 
   return (
     <MessageContext.Provider

@@ -1,5 +1,6 @@
 import { Avatar, Badge, styled } from "@mui/material";
 import { SxProps } from "@mui/system";
+import { useState } from "react";
 
 function stringToColor(string: string) {
   let hash = 0;
@@ -32,7 +33,7 @@ function stringAvatar(name: string) {
 
 export const AvatarOnline = ({
   srcImage,
-  title,
+  title = "Conversation 1",
   isOnline,
   sx,
 }: {
@@ -76,7 +77,7 @@ export const AvatarOnline = ({
       anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       variant={isOnline ? "dot" : "standard"}
     >
-      {srcImage ? (
+      {srcImage && title ? (
         <Avatar src={srcImage} sx={sx} />
       ) : (
         <Avatar
@@ -84,6 +85,8 @@ export const AvatarOnline = ({
           sx={{ ...sx, bgcolor: stringToColor(title) }}
         />
       )}
+
+      {!srcImage && !title && <Avatar sx={sx} />}
     </StyledBadge>
   );
 };
