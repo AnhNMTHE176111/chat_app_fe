@@ -1,51 +1,40 @@
 import {
   Avatar,
-  Badge,
   Box,
   Button,
   Chip,
   CircularProgress,
   Container,
-  Divider,
   FormControl,
   Grid,
   IconButton,
-  ImageList,
-  ImageListItem,
   InputBase,
   List,
   ListItem,
   ListItemAvatar,
-  ListItemButton,
-  ListItemIcon,
   ListItemText,
   Menu,
-  MenuItem,
   Paper,
-  Popover,
-  Stack,
-  SxProps,
   Tooltip,
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { AttachFile, Send } from "@mui/icons-material";
 import { useLocation, useParams } from "react-router-dom";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  getAllFilesConversation,
-  getAllMediasConversation,
   getConversationByID,
   getMessagesConversation,
   loadMoreMessageConversation,
   sendMessage,
-  storage,
-  storageRef,
 } from "../../../services";
 import {
-  AvatarOnline,
   CircularProgressWithLabel,
   DialogViewImage,
+  HeaderConversation,
+  ConversationOptions,
+  ImagePreview,
+  InputMessage,
 } from "../../../components";
 import {
   useAuth,
@@ -55,63 +44,13 @@ import {
   useUploadFile,
 } from "../../../hooks";
 import moment from "moment";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import SearchIcon from "@mui/icons-material/Search";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import CallIcon from "@mui/icons-material/Call";
-import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
-import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
-import ImageIcon from "@mui/icons-material/Image";
 import DescriptionIcon from "@mui/icons-material/Description";
-import GroupAddIcon from "@mui/icons-material/GroupAdd";
-import ViewSidebarOutlinedIcon from "@mui/icons-material/ViewSidebarOutlined";
-import ArrowBackIosNewOutlinedIcon from "@mui/icons-material/ArrowBackIosNewOutlined";
-import EmojiEmotionsOutlinedIcon from "@mui/icons-material/EmojiEmotionsOutlined";
-import DeleteIcon from "@mui/icons-material/Delete";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import ReplyIcon from "@mui/icons-material/Reply";
-import ThumbUpIcon from "@mui/icons-material/ThumbUp";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import { MESSAGE_TYPE, SOCKET_EVENT } from "../../../constants";
 import InfiniteScroll from "react-infinite-scroll-component";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import * as _ from "lodash";
 import { saveAs } from "file-saver";
-import { ConversationOptions } from "../../../components";
-import { sxCenterColumnFlex, sxCenterRowFlex } from "../../../css/css_type";
-
-const VisuallyHiddenInput = styled("input")({
-  clip: "rect(0 0 0 0)",
-  clipPath: "inset(50%)",
-  height: 1,
-  overflow: "hidden",
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  whiteSpace: "nowrap",
-  width: 1,
-});
-
-const ImagePreview = ({ file, sx }: { file: File; sx?: SxProps }) => {
-  const [imageUrl, setImageUrl] = useState<string>();
-  // Handle image URL creation and cleanup
-  useEffect(() => {
-    const url = URL.createObjectURL(file);
-    setImageUrl(url);
-
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
-
-  return (
-    <ImageListItem
-      sx={{
-        ...sx,
-      }}
-    >
-      <img src={imageUrl} alt="Preview" />
-    </ImageListItem>
-  );
-};
+import { sxCenterRowFlex } from "../../../css/css_type";
 
 const drawerWidth = 300;
 
@@ -154,31 +93,20 @@ export function Conversation() {
   const openPopover = Boolean(anchorElMessage);
 
   const [receiver, setReceiver] = useState();
-  const [message, setMessage] = useState("");
-  const {
-    file,
-    setFile,
-    progressUpload,
-    downloadFileURL,
-    handleUploadFile,
-    fileDestination,
-    setFileDestination,
-  } = useUploadFile();
+  const { handleUploadFile, progressUpload } = useUploadFile();
   const [isLoadMoreMsg, setIsLoadMoreMsg] = useState(false);
   const lastMessageRef = useRef<any>(null);
 
   const {
-    newMessage,
     setNewMessage,
     messages,
     setMessages,
-    latestMessage,
     setLatestMessage,
     conversations,
     setConversations,
   } = useMessage();
 
-  const { handleToggleDrawer, open } = useDrawerState();
+  const { open } = useDrawerState();
 
   /** Preview Image */
   const [openPreviewImage, setOpenPreviewImage] = useState<boolean>(false);
@@ -191,19 +119,8 @@ export function Conversation() {
     setPreviewImageLink(imageLink);
   };
 
-  /** Conversation Options */
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const openEmoji = Boolean(anchorEl);
-  const handleClickEmoji = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleCloseEmoji = () => {
-    setAnchorEl(null);
-  };
-
   useEffect(() => {
     if (id) {
-      setMessage("");
       setLoadingImage(true);
       const fetch = async () => {
         try {
@@ -211,7 +128,7 @@ export function Conversation() {
           setConversation(result.data);
         } catch (error) {}
       };
-      if (!conversation) {
+      if (!conversation || conversation.id != id) {
         fetch();
       }
       getMessagesConversation(id)
@@ -264,12 +181,17 @@ export function Conversation() {
     setLoadingImageFail(true);
   };
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (
+    message: string,
+    file: File | null,
+    fileDestination: string
+  ) => {
     let messageType = "text";
     let resultUpload = null;
+
     if (file) {
       try {
-        resultUpload = await handleUploadFile();
+        resultUpload = await handleUploadFile(file, fileDestination);
       } catch (error) {
         console.log(error);
       }
@@ -299,38 +221,11 @@ export function Conversation() {
         return conversation;
       });
       setConversations(updatedConversations);
-      setMessage("");
-      setFile(null);
       setLatestMessage(result.data);
       setNewMessage(result.data);
       setMessages((prev: any) => [...prev, result.data]);
       moveToLastMessage();
     });
-  };
-
-  const handleEmojiClick = (emojiData: EmojiClickData, event: MouseEvent) => {
-    setMessage((prevMessage) => prevMessage + emojiData.emoji);
-  };
-
-  const handleKeyPress = (event: any) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const handleInputChange = (
-    event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) => {
-    setMessage(event.target.value);
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setFile(event.target.files[0]);
-      setFileDestination(`conversation/${id}/${event.target.files[0].name}`);
-      setMessage("");
-    }
   };
 
   /** Infinite Scroll */
@@ -410,60 +305,9 @@ export function Conversation() {
             padding: "0 10px",
           }}
         >
-          <Box
-            sx={{
-              width: "fit-content",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            {conversation && (
-              <AvatarOnline
-                srcImage={conversation?.picture}
-                title={conversation?.title}
-                isOnline={isOnline}
-              />
-            )}
-            <ListItemText
-              sx={{
-                marginLeft: "10px",
-              }}
-              primary={conversation?.title}
-              secondary={isOnline ? "Online" : "Offline"}
-            />
-          </Box>
-          <Box>
-            <Tooltip title="Add Friend">
-              <IconButton>
-                <PersonAddIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Call">
-              <IconButton>
-                <CallIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Video Call">
-              <IconButton>
-                <VideoCameraFrontIcon />
-              </IconButton>
-            </Tooltip>
-            {open ? (
-              <Tooltip title="Close Conversation Information">
-                <IconButton onClick={handleToggleDrawer}>
-                  <ViewSidebarOutlinedIcon />
-                </IconButton>
-              </Tooltip>
-            ) : (
-              <Tooltip title="Open Conversation Information">
-                <IconButton onClick={handleToggleDrawer}>
-                  <ViewSidebarIcon />
-                </IconButton>
-              </Tooltip>
-            )}
-          </Box>
+          <HeaderConversation conversation={conversation} isOnline={isOnline} />
         </Grid>
+
         {/* MESSAGE CONTAINER */}
         <Grid item xs={12} sx={{ height: "80%" }}>
           <Container
@@ -668,139 +512,31 @@ export function Conversation() {
             justifyContent: "center",
           }}
         >
-          <Container sx={{ height: "wrap-content" }}>
-            <FormControl fullWidth sx={{ height: "wrap-content" }}>
-              <Paper
-                component="form"
-                elevation={5}
-                sx={{
-                  p: "2px 4px",
-                  display: "flex",
-                  alignItems: "center",
-                }}
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  return handleSendMessage();
-                }}
-              >
-                {/* CHOOSE FILE BUTTON */}
-                <Tooltip title="Attach File">
-                  <Button role={undefined} component="label">
-                    <AttachFile />
-                    <VisuallyHiddenInput
-                      type="file"
-                      accept="image/*, .doc, .docx, .pdf"
-                      onChange={handleFileChange}
-                    />
-                  </Button>
-                </Tooltip>
-
-                {/* INPUT MESSAGE */}
-
-                {/* PREVIEW FILE / IMAGE */}
-                {file && (
-                  <Box sx={{ ml: 1, flex: 1 }}>
-                    <Box sx={{ ...sxCenterRowFlex }}>
-                      {file.type.startsWith("image") ? (
-                        <ImagePreview
-                          sx={{
-                            maxWidth: "7%",
-                            maxHeight: "10%",
-                            objectFit: "cover",
-                          }}
-                          file={file}
-                        />
-                      ) : (
-                        <Chip
-                          icon={<InsertDriveFileIcon />}
-                          label={file.name}
-                          variant="outlined"
-                        />
-                      )}
-
-                      <IconButton
-                        aria-label="delete"
-                        onClick={() => setFile(null)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  </Box>
-                )}
-
-                {/* TEXT INPUT */}
-                {!file && (
-                  <InputBase
-                    autoFocus
-                    sx={{ ml: 1, flex: 1 }}
-                    placeholder="Aa"
-                    value={message}
-                    onChange={handleInputChange}
-                    onKeyPress={handleKeyPress}
-                    multiline
-                    maxRows={3}
-                  />
-                )}
-
-                {/* UPLOAD PROGRESS */}
-                {progressUpload && (
-                  <CircularProgressWithLabel value={progressUpload} />
-                )}
-                {/* EMOJI BUTTON */}
-                <Menu
-                  id="basic-menu"
-                  open={openEmoji}
-                  anchorEl={anchorEl}
-                  onClose={handleCloseEmoji}
-                  MenuListProps={{
-                    "aria-labelledby": "basic-button",
-                  }}
-                  anchorOrigin={{
-                    vertical: "top",
-                    horizontal: "center",
-                  }}
-                  transformOrigin={{
-                    vertical: "bottom",
-                    horizontal: "center",
-                  }}
-                >
-                  <EmojiPicker onEmojiClick={handleEmojiClick} />
-                </Menu>
-                <Tooltip title="Emoji">
-                  <IconButton
-                    id="basic-button"
-                    aria-controls={openEmoji ? "basic-menu" : undefined}
-                    aria-haspopup="true"
-                    aria-expanded={openEmoji ? "true" : undefined}
-                    onClick={handleClickEmoji}
-                  >
-                    <EmojiEmotionsOutlinedIcon />
-                  </IconButton>
-                </Tooltip>
-                {/* SEND MESSAGE BUTTON */}
-                <Tooltip title="Send Message">
-                  <IconButton
-                    type="submit"
-                    sx={{ p: "10px" }}
-                    aria-label="send"
-                  >
-                    <Send />
-                  </IconButton>
-                </Tooltip>
-              </Paper>
-            </FormControl>
-          </Container>
+          <InputMessage
+            conversationId={id}
+            handleSendMessage={handleSendMessage}
+            progressUpload={progressUpload}
+          />
         </Grid>
       </Grid>
 
       {open && (
-        <ConversationOptions
-          open={open}
-          conversation={conversation}
-          isOnline={isOnline}
-          id={id}
-          handleOpenPreviewImageDialog={handleOpenPreviewImageDialog}
-        />
+        <Grid
+          container
+          item
+          xs={open ? 4 : 0}
+          sx={{
+            height: "100%",
+          }}
+        >
+          <ConversationOptions
+            open={open}
+            conversation={conversation}
+            isOnline={isOnline}
+            id={id}
+            handleOpenPreviewImageDialog={handleOpenPreviewImageDialog}
+          />
+        </Grid>
       )}
     </Grid>
   );

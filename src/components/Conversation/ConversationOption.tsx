@@ -24,7 +24,7 @@ import ImageIcon from "@mui/icons-material/Image";
 import DescriptionIcon from "@mui/icons-material/Description";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import ArrowBackIosNewOutlinedIcon from "@mui/icons-material/ArrowBackIosNewOutlined";
-import { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { sxCenterColumnFlex, sxCenterRowFlex } from "../../css/css_type";
 import { saveAs } from "file-saver";
 
@@ -62,10 +62,10 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
     }
     if (newMessage.conversation_id == id) {
       if (newMessage.messageType == MESSAGE_TYPE.FILE) {
-        setFiles((prev: any) => [...prev, newMessage]);
+        setFiles((prev: any) => (prev ? [...prev, newMessage] : [newMessage]));
       }
       if (newMessage.messageType == MESSAGE_TYPE.IMAGE) {
-        setMedias((prev: any) => [...prev, newMessage]);
+        setMedias((prev: any) => (prev ? [...prev, newMessage] : [newMessage]));
       }
     }
   }, [newMessage]);
@@ -98,14 +98,7 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
   };
 
   return (
-    <Grid
-      container
-      item
-      xs={open ? 4 : 0}
-      sx={{
-        height: "100%",
-      }}
-    >
+    <React.Fragment>
       {!openMedia && !openFile && (
         <Container
           maxWidth="sm"
@@ -310,7 +303,7 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
           </Box>
         </Container>
       )}
-    </Grid>
+    </React.Fragment>
   );
 };
 

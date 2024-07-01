@@ -8,12 +8,13 @@ interface UploadResult {
 }
 
 export const useUploadFile = () => {
-  const [file, setFile] = useState<File | null>(null);
-  const [fileDestination, setFileDestination] = useState<string>();
   const [progressUpload, setProgressUpload] = useState<number | null>(null);
   const [downloadFileURL, setDownloadFileURL] = useState<string | null>(null);
 
-  const handleUploadFile = async (): Promise<UploadResult | null> => {
+  const handleUploadFile = async (
+    file: File | null,
+    fileDestination: string
+  ): Promise<UploadResult | null> => {
     if (file) {
       const folderRef = ref(storageRef, fileDestination);
       const uploadTask = uploadBytesResumable(folderRef, file);
@@ -44,7 +45,7 @@ export const useUploadFile = () => {
           }
         );
       });
-    }
+    } 
     return null;
   };
 
@@ -57,12 +58,8 @@ export const useUploadFile = () => {
   }, [progressUpload]);
 
   return {
-    file,
-    setFile,
     progressUpload,
     downloadFileURL,
     handleUploadFile,
-    fileDestination,
-    setFileDestination,
   };
 };
