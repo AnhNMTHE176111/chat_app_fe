@@ -69,7 +69,7 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
       }
     }
   }, [newMessage]);
-
+  
   useEffect(() => {
     handleBackToConversationInforTab();
   }, [id]);

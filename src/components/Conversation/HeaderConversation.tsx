@@ -11,13 +11,16 @@ import ViewSidebarOutlinedIcon from "@mui/icons-material/ViewSidebarOutlined";
 interface HeaderConversation {
   conversation: any;
   isOnline: boolean;
+  handleToggleDrawer: () => void;
+  open: boolean;
 }
 
 export const HeaderConversation: FC<HeaderConversation> = ({
   conversation,
   isOnline,
+  handleToggleDrawer,
+  open,
 }) => {
-  const { handleToggleDrawer, open } = useDrawerState();
 
   return (
     <React.Fragment>
