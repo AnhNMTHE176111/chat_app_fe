@@ -5,6 +5,11 @@ import {
   Button,
   CircularProgress,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   IconButton,
   List,
@@ -30,16 +35,19 @@ import { useAuth, useSocket } from "../../hooks";
 import { MessagesListSkeleton } from "../Skeleton";
 import { debounce } from "lodash";
 import ReplyRoundedIcon from "@mui/icons-material/ReplyRounded";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { getSubjectName, slideText } from "../../helpers/utils";
 import "../../css/MessageAnimation.css";
 
 interface MessagesListProps {
   messages: any[];
+  setMessages: React.Dispatch<any>;
   handleOpenPreviewImageDialog: (imageLink: string) => void;
   isLoading: boolean;
   lastMessageRef: any;
   setThreadMessage: React.Dispatch<any>;
+  receiver: any;
 }
 
 interface MessageOptionsProps {
@@ -47,6 +55,7 @@ interface MessageOptionsProps {
   message: any;
   handleThreadMessage: (message: any) => void;
   handleOpenReaction: (index: any, msgId: any) => void;
+  handleOpenDialogDelete: () => void;
 }
 
 const editContentThread = (message: any, lengthSlide: number) => {
@@ -72,6 +81,7 @@ const MessageOptions: FC<MessageOptionsProps> = ({
   message,
   handleOpenReaction,
   handleThreadMessage,
+  handleOpenDialogDelete,
 }) => {
   return (
     <Box id={`message-option-${index}`}>
@@ -84,8 +94,8 @@ const MessageOptions: FC<MessageOptionsProps> = ({
       <IconButton size="small" onClick={() => handleThreadMessage(message)}>
         <ReplyIcon fontSize="small" />
       </IconButton>
-      <IconButton size="small" onClick={() => console.log("Hello 3")}>
-        <MoreVertIcon fontSize="small" />
+      <IconButton size="small" onClick={handleOpenDialogDelete}>
+        <DeleteOutlineOutlinedIcon fontSize="small" />
       </IconButton>
     </Box>
   );
@@ -93,10 +103,12 @@ const MessageOptions: FC<MessageOptionsProps> = ({
 
 export const MessagesList: FC<MessagesListProps> = ({
   messages,
+  setMessages,
   isLoading,
   handleOpenPreviewImageDialog,
   lastMessageRef,
   setThreadMessage,
+  receiver,
 }) => {
   const { user } = useAuth();
   const topMessageRef = useRef<any>();
@@ -206,6 +218,39 @@ export const MessagesList: FC<MessagesListProps> = ({
     handleCloseReaction();
   };
 
+  /** Dialog delete message */
+  const [openDialogDelete, setOpenDialogDelete] = useState(false);
+  const [deleteIsMyMessage, setDeleteIsMyMessage] = useState(false);
+  const [currentDeleteMessage, setCurrentDeleteMessage] = useState<any>(null);
+
+  const handleOpenDialogDelete = (message: any, isMyMessage: boolean) => {
+    setOpenDialogDelete(true);
+    setDeleteIsMyMessage(isMyMessage);
+    setCurrentDeleteMessage(message);
+  };
+
+  const handleCloseDialogDelete = () => {
+    setOpenDialogDelete(false);
+    setDeleteIsMyMessage(false);
+    setCurrentDeleteMessage(null);
+  };
+
+  const handleDeleteMessage = () => {
+    if (currentDeleteMessage) {
+      socket?.emit(SOCKET_EVENT.DELETE_MESSAGE, {
+        message: currentDeleteMessage,
+        isMyMessage: deleteIsMyMessage,
+        hiddenFor: user?.id,
+        receiver: receiver,
+      });
+      const updatedMessages = messages.filter(
+        (item: any) => item._id != currentDeleteMessage._id
+      );
+      setMessages(updatedMessages);
+    }
+    handleCloseDialogDelete();
+  };
+
   return (
     <Container
       ref={chatContainerRef}
@@ -237,6 +282,32 @@ export const MessagesList: FC<MessagesListProps> = ({
           onReactionClick={handleReaction}
         />
       </Popover>
+
+      <Dialog
+        open={openDialogDelete}
+        onClose={handleCloseDialogDelete}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {deleteIsMyMessage
+            ? "Permanently delete your messages?"
+            : "Delete someone else's messages?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {deleteIsMyMessage
+              ? "Neither anyone nor you can see this message after deletion."
+              : "This message will no longer be visible to you, but it will still appear elsewhere"}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialogDelete}>Disagree</Button>
+          <Button onClick={handleDeleteMessage} autoFocus>
+            Agree
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {isLoading ? (
         <MessagesListSkeleton />
@@ -310,6 +381,9 @@ export const MessagesList: FC<MessagesListProps> = ({
                       message={message}
                       handleOpenReaction={handleOpenReaction}
                       handleThreadMessage={handleThreadMessage}
+                      handleOpenDialogDelete={() =>
+                        handleOpenDialogDelete(message, isMyMessage)
+                      }
                     />
                   )}
 
@@ -483,6 +557,9 @@ export const MessagesList: FC<MessagesListProps> = ({
                       message={message}
                       handleOpenReaction={handleOpenReaction}
                       handleThreadMessage={handleThreadMessage}
+                      handleOpenDialogDelete={() =>
+                        handleOpenDialogDelete(message, isMyMessage)
+                      }
                     />
                   )}
                 </ListItem>

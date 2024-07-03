@@ -2,13 +2,23 @@ import { Divider, Grid, List, ListItem } from "@mui/material";
 import { ChatElement, SearchInput } from "../../../components";
 import { useForm } from "react-hook-form";
 import { SearchParams } from "../../../services";
-import { useEffect } from "react";
+import { FC, useEffect } from "react";
 import { getAllConversation } from "../../../services";
 import { useMessage } from "../../../hooks";
 
-export function HistoryChat() {
+interface HistoryChatProps {
+  conversations: any;
+  setConversations: any;
+  latestMessage: any;
+}
+
+export const HistoryChat: FC<HistoryChatProps> = ({
+  conversations,
+  setConversations,
+  latestMessage,
+}) => {
   const { control } = useForm<SearchParams>();
-  const { conversations, setConversations } = useMessage();
+  const {} = useMessage();
 
   useEffect(() => {
     getAllConversation()
@@ -59,11 +69,15 @@ export function HistoryChat() {
         }}
       >
         {conversations.map((value: any) => (
-          <ChatElement key={value._id} data={value} />
+          <ChatElement
+            key={value._id}
+            data={value}
+            latestMessage={latestMessage}
+          />
         ))}
       </List>
     </Grid>
   );
-}
+};
 
 export default HistoryChat;

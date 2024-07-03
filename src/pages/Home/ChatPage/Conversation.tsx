@@ -1,6 +1,6 @@
 import { Container, Grid, IconButton, ListItemText } from "@mui/material";
 import { useLocation, useParams } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import {
   getConversationByID,
   getMessagesConversation,
@@ -22,21 +22,21 @@ import {
 } from "../../../hooks";
 import { MESSAGE_TYPE, SOCKET_EVENT } from "../../../constants";
 import ClearIcon from "@mui/icons-material/Clear";
+import { ChatContainerProps } from "../../../providers";
 
-export function Conversation() {
+export const Conversation: FC<ChatContainerProps> = ({
+  conversations,
+  messages,
+  setConversations,
+  setLatestMessage,
+  setMessages,
+  setNewMessage,
+}) => {
   const { user } = useAuth();
   const { id } = useParams<string>();
   const { onlineUsers, socket } = useSocket();
   const { handleUploadFile, progressUpload } = useUploadFile();
   const { open, handleToggleDrawer } = useDrawerState();
-  const {
-    setNewMessage,
-    messages,
-    setMessages,
-    setLatestMessage,
-    conversations,
-    setConversations,
-  } = useMessage();
   const location = useLocation();
 
   const [conversation, setConversation] = useState(
@@ -239,10 +239,12 @@ export function Conversation() {
         >
           <MessagesList
             messages={messages}
+            setMessages={setMessages}
             isLoading={isLoading}
             handleOpenPreviewImageDialog={handleOpenPreviewImageDialog}
             lastMessageRef={lastMessageRef}
             setThreadMessage={setThreadMessage}
+            receiver={receiver}
           />
         </Grid>
 
@@ -310,6 +312,6 @@ export function Conversation() {
       )}
     </Grid>
   );
-}
+};
 
 export default Conversation;

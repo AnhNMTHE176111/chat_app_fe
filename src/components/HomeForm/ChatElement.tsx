@@ -1,5 +1,5 @@
 import { Avatar, Badge, Box, Stack, Typography, styled } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth, useMessage, useSocket } from "../../hooks";
 import {
@@ -11,6 +11,7 @@ import { AvatarOnline } from "./AvatarOnline";
 import moment from "moment";
 import { SOCKET_EVENT } from "../../constants";
 import { getSubjectName, slideText } from "../../helpers/utils";
+import { ChatContainerProps } from "../../providers";
 
 const StyledChatBox = styled(Box)(({ theme }) => ({
   "&:hover": {
@@ -18,10 +19,14 @@ const StyledChatBox = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const ChatElement = ({ data }: { data: any }) => {
+interface ChatElementProps {
+  data: any;
+  latestMessage: any;
+}
+
+export const ChatElement: FC<ChatElementProps> = ({ data, latestMessage }) => {
   /** Gloabl Variable */
   const { id } = useParams<{ id: string }>();
-  const { latestMessage } = useMessage();
   const navigate = useNavigate();
   const { onlineUsers } = useSocket();
   const { user } = useAuth();
