@@ -2,13 +2,12 @@ import { Divider, Grid, List, ListItem } from "@mui/material";
 import { ChatElement, SearchInput } from "../../../components";
 import { useForm } from "react-hook-form";
 import { SearchParams } from "../../../services";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { getAllConversation } from "../../../services";
 import { useMessage } from "../../../hooks";
-import moment from "moment";
 
 export function HistoryChat() {
-  const { control, handleSubmit } = useForm<SearchParams>();
+  const { control } = useForm<SearchParams>();
   const { conversations, setConversations } = useMessage();
 
   useEffect(() => {

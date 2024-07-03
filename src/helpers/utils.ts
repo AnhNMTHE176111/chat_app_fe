@@ -32,3 +32,14 @@ export const toggleTitle = (eventName: string) => {
     }
   );
 };
+
+export const getSubjectName = (name: any) => {
+  return name
+    .split(" ")
+    .filter((word: string) => /^[a-zA-Z]+$/.test(word))
+    .pop();
+};
+
+export function slideText(text: string, length: number) {
+  return text.length > length ? `${text.slice(0, length)}...` : text;
+}

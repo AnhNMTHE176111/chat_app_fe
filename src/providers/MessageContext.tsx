@@ -1,7 +1,7 @@
 import { createContext, useCallback, useEffect, useState } from "react";
-import { useAuth, useSocket } from "../hooks";
+import { useSocket } from "../hooks";
 import { useParams } from "react-router-dom";
-import { playNewMessageSound, toggleTitle } from "../helpers/utils";
+import { toggleTitle } from "../helpers/utils";
 
 export const MessageContext = createContext<any>(null);
 
@@ -11,7 +11,6 @@ export const MessageContextProvider = ({ children }: { children: any }) => {
   const [latestMessage, setLatestMessage] = useState<any>();
   const [conversations, setConversations] = useState<any[]>([]);
   const { socket } = useSocket();
-  const { user } = useAuth();
   const { id } = useParams<{ id: string }>();
 
   const handleMessageReceived = useCallback(

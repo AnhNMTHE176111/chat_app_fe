@@ -1,4 +1,4 @@
-import { Grid } from "@mui/material";
+import { Container, Grid, IconButton, ListItemText } from "@mui/material";
 import { useLocation, useParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -21,6 +21,7 @@ import {
   useUploadFile,
 } from "../../../hooks";
 import { MESSAGE_TYPE, SOCKET_EVENT } from "../../../constants";
+import ClearIcon from "@mui/icons-material/Clear";
 
 export function Conversation() {
   const { user } = useAuth();
@@ -47,12 +48,14 @@ export function Conversation() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [receiver, setReceiver] = useState();
   const lastMessageRef = useRef<any>(null);
+  const [threadMessage, setThreadMessage] = useState<any>();
   /** Preview Image */
   const [openPreviewImage, setOpenPreviewImage] = useState<boolean>(false);
   const [previewImageLink, setPreviewImageLink] = useState<string>("");
 
   useEffect(() => {
     if (id) {
+      setThreadMessage(null);
       setIsLoading(true);
       const fetch = async () => {
         try {
@@ -114,6 +117,7 @@ export function Conversation() {
       content: message,
       receiver: receiver,
       messageType: messageType,
+      thread: threadMessage?.message._id,
       attachmentLink: resultUpload?.url,
       attachmentName: file?.name || null,
       attachmentSize: resultUpload?.size,
@@ -129,6 +133,7 @@ export function Conversation() {
         }
         return conversation;
       });
+      setThreadMessage(null);
       setConversations(updatedConversations);
       setLatestMessage(result.data);
       setNewMessage(result.data);
@@ -208,7 +213,7 @@ export function Conversation() {
           item
           xs={12}
           sx={{
-            height: "10%",
+            height: "8%",
             alignItems: "center",
             backgroundColor: "white",
             display: "flex",
@@ -225,12 +230,19 @@ export function Conversation() {
         </Grid>
 
         {/* MESSAGE CONTAINER */}
-        <Grid item xs={12} sx={{ height: "80%" }}>
+        <Grid
+          item
+          xs={12}
+          sx={{
+            height: threadMessage ? "75%" : "82%",
+          }}
+        >
           <MessagesList
             messages={messages}
             isLoading={isLoading}
             handleOpenPreviewImageDialog={handleOpenPreviewImageDialog}
             lastMessageRef={lastMessageRef}
+            setThreadMessage={setThreadMessage}
           />
         </Grid>
 
@@ -240,16 +252,40 @@ export function Conversation() {
           item
           xs={12}
           sx={{
-            height: "10%",
+            minHeight: threadMessage ? "15%" : "10%",
+            height: "auto",
             boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.25)",
             alignItems: "center",
             justifyContent: "center",
           }}
         >
+          {threadMessage && (
+            <Container
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                alignContent: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <ListItemText
+                primary={threadMessage.replyTo}
+                secondary={threadMessage.content}
+              />
+              <IconButton
+                aria-label="delete"
+                size="large"
+                onClick={() => setThreadMessage(null)}
+              >
+                <ClearIcon />
+              </IconButton>
+            </Container>
+          )}
           <InputMessage
             conversationId={id}
             handleSendMessage={handleSendMessage}
             progressUpload={progressUpload}
+            threadMessage={threadMessage}
           />
         </Grid>
       </Grid>

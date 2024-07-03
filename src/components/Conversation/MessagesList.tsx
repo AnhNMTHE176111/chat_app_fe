@@ -5,11 +5,13 @@ import {
   Button,
   CircularProgress,
   Container,
+  Divider,
   IconButton,
   List,
   ListItem,
   ListItemAvatar,
   ListItemText,
+  Paper,
   Popover,
   Popper,
   Tooltip,
@@ -27,20 +29,74 @@ import { saveAs } from "file-saver";
 import { useAuth, useSocket } from "../../hooks";
 import { MessagesListSkeleton } from "../Skeleton";
 import { debounce } from "lodash";
+import ReplyRoundedIcon from "@mui/icons-material/ReplyRounded";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
+import { getSubjectName, slideText } from "../../helpers/utils";
+import "../../css/MessageAnimation.css";
 
 interface MessagesListProps {
   messages: any[];
   handleOpenPreviewImageDialog: (imageLink: string) => void;
   isLoading: boolean;
   lastMessageRef: any;
+  setThreadMessage: React.Dispatch<any>;
 }
+
+interface MessageOptionsProps {
+  index: number;
+  message: any;
+  handleThreadMessage: (message: any) => void;
+  handleOpenReaction: (index: any, msgId: any) => void;
+}
+
+const editContentThread = (message: any, lengthSlide: number) => {
+  let content = "";
+  switch (message.messageType) {
+    case MESSAGE_TYPE.FILE:
+      content = "File";
+      break;
+    case MESSAGE_TYPE.IMAGE:
+      content = "Image";
+      break;
+    case MESSAGE_TYPE.TEXT:
+      content = slideText(message.content, lengthSlide);
+      break;
+    default:
+      break;
+  }
+  return content;
+};
+
+const MessageOptions: FC<MessageOptionsProps> = ({
+  index,
+  message,
+  handleOpenReaction,
+  handleThreadMessage,
+}) => {
+  return (
+    <Box id={`message-option-${index}`}>
+      <IconButton
+        size="small"
+        onClick={() => handleOpenReaction(index, message._id)}
+      >
+        <ThumbUpIcon fontSize="small" />
+      </IconButton>
+      <IconButton size="small" onClick={() => handleThreadMessage(message)}>
+        <ReplyIcon fontSize="small" />
+      </IconButton>
+      <IconButton size="small" onClick={() => console.log("Hello 3")}>
+        <MoreVertIcon fontSize="small" />
+      </IconButton>
+    </Box>
+  );
+};
 
 export const MessagesList: FC<MessagesListProps> = ({
   messages,
   isLoading,
   handleOpenPreviewImageDialog,
   lastMessageRef,
+  setThreadMessage,
 }) => {
   const { user } = useAuth();
   const topMessageRef = useRef<any>();
@@ -49,9 +105,18 @@ export const MessagesList: FC<MessagesListProps> = ({
   const [loadingImageFail, setLoadingImageFail] = useState<boolean>(false);
   const [isMyMessageEl, setIsMyMessageEl] = useState<boolean>();
   const timerRef = useRef<any>(null);
+  const threadMessagesRef: any = {};
+  const [highlightedMessageId, setHighlightedMessageId] = useState(null);
+  const scrollToThreadMessage = (messageId: any) => {
+    if (threadMessagesRef[messageId]) {
+      setHighlightedMessageId(messageId);
+      threadMessagesRef[messageId].scrollIntoView({ behavior: "auto" });
+    }
+  };
 
   useEffect(() => {
     moveToLastMessage();
+    setHighlightedMessageId(null);
   }, [messages]);
 
   useEffect(() => {
@@ -126,6 +191,19 @@ export const MessagesList: FC<MessagesListProps> = ({
       emoji: emojiIcon,
     });
     handleCloseReaction();
+    setHighlightedMessageId(null);
+  };
+
+  const handleThreadMessage = (message: any) => {
+    const subjectName =
+      message.sender_id._id == user?.id
+        ? "You"
+        : getSubjectName(message.sender_id.fullName);
+    const replyTo = `Reply to ${subjectName}`;
+    let content = editContentThread(message, 50);
+    setHighlightedMessageId(null);
+    setThreadMessage({ message: message, replyTo: replyTo, content: content });
+    handleCloseReaction();
   };
 
   return (
@@ -165,6 +243,14 @@ export const MessagesList: FC<MessagesListProps> = ({
       ) : (
         <List dense={true}>
           {messages.map((message: any, index: any) => {
+            let breakTime = false;
+            if (index > 0) {
+              breakTime =
+                moment(message.createdAt).diff(
+                  moment(messages[index - 1].createdAt),
+                  "hours"
+                ) >= 2;
+            }
             const isMyMessage = message.sender_id._id == user?.id;
             const isLastFromSender =
               index == messages.length - 1 ||
@@ -180,203 +266,227 @@ export const MessagesList: FC<MessagesListProps> = ({
               numOfEmoji += emoji.count;
             });
             emojiContent += numOfEmoji;
+            let threadContent = "";
+            if (message.thread) {
+              threadContent = editContentThread(message.thread, 15);
+            }
 
             return (
-              <ListItem
-                key={index}
-                sx={{
-                  display: "flex",
-                  justifyContent: isMyMessage ? "flex-end" : "flex-start",
-                  marginBottom: numOfEmoji !== 0 ? "10px" : "",
-                }}
-                ref={topMessageRef}
-                onMouseEnter={() => handleOnMouseEnter(index)}
-                onMouseLeave={() => handleOnMouseLeave()}
-              >
-                {!isMyMessage && isLastFromSender ? (
-                  <ListItemAvatar>
-                    <Avatar src={message.sender_id.avatar} />
-                  </ListItemAvatar>
-                ) : (
-                  <ListItemAvatar sx={{ visibility: "hidden" }}>
-                    <Avatar />
-                  </ListItemAvatar>
+              <React.Fragment key={message._id}>
+                {breakTime && (
+                  <Typography
+                    textAlign={"center"}
+                    fontSize={12}
+                    sx={{ margin: "20px 0" }}
+                  >
+                    {fullTime}
+                  </Typography>
                 )}
-
-                {isMyMessage && showMessageOptionIndex == index && (
-                  <Box id={`message-option-${index}`}>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleOpenReaction(index, message._id)}
-                    >
-                      <ThumbUpIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={() => console.log("Hello 2")}
-                    >
-                      <ReplyIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={() => console.log("Hello 3")}
-                    >
-                      <MoreVertIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
-                )}
-
-                <Box
+                <ListItem
                   sx={{
-                    backgroundColor: isMyMessage ? "#bbdefb" : "#e0e0e0",
-                    borderRadius: "8px",
-                    width: "fit-content",
-                    maxWidth:
-                      message.messageType === MESSAGE_TYPE.IMAGE
-                        ? "30%"
-                        : "40%",
-                    padding: "8px 12px",
-                    wordWrap: "break-word",
-                    whiteSpace: "pre-wrap",
-                    position: "relative",
+                    display: "flex",
+                    justifyContent: isMyMessage ? "flex-end" : "flex-start",
+                    marginBottom: numOfEmoji !== 0 ? "10px" : "",
                   }}
-                  id={`message-box-${index}`}
-                  ref={lastMessageRef}
+                  ref={(ref) => {
+                    threadMessagesRef[message._id] = ref;
+                  }}
+                  onMouseEnter={() => handleOnMouseEnter(index)}
+                  onMouseLeave={() => handleOnMouseLeave()}
                 >
-                  <Tooltip title={fullTime} placement="left-start">
-                    <Box>
-                      {message.messageType === MESSAGE_TYPE.IMAGE && (
-                        <Box
-                          component="div"
-                          sx={{
-                            width: "100%",
-                          }}
-                        >
-                          {loadingImage && (
-                            <Box
-                              sx={{
-                                minHeight: "300px",
-                                width: "200px",
-                                ...sxCenterRowFlex,
-                                justifyContent: "center",
-                              }}
-                            >
-                              <CircularProgress color="secondary" />
-                            </Box>
-                          )}
-                          <img
-                            style={{
-                              width: "100%",
-                              height: "auto",
-                              objectFit: "cover",
-                              display: loadingImage ? "none" : "block",
-                            }}
-                            src={message.attachmentLink}
-                            alt={loadingImageFail ? "Image Fail" : "Image"}
-                            onLoad={handleImageLoad}
-                            onError={handleImageError}
-                            onClick={() =>
-                              handleOpenPreviewImageDialog(
-                                message.attachmentLink
-                              )
-                            }
-                          />
-                        </Box>
-                      )}
+                  {!isMyMessage && isLastFromSender ? (
+                    <ListItemAvatar>
+                      <Avatar src={message.sender_id.avatar} />
+                    </ListItemAvatar>
+                  ) : (
+                    <ListItemAvatar sx={{ visibility: "hidden" }}>
+                      <Avatar />
+                    </ListItemAvatar>
+                  )}
 
-                      {message.messageType === MESSAGE_TYPE.FILE && (
-                        <Box sx={{ ...sxCenterRowFlex }}>
-                          <Button
-                            variant="outlined"
-                            startIcon={<DescriptionIcon />}
-                            onClick={() => {
-                              saveAs(
-                                message.attachmentLink,
-                                message.attachmentName
-                              );
-                            }}
-                          >
-                            {message.attachmentName ?? "File"}
-                          </Button>
-                        </Box>
-                      )}
-
-                      {message.messageType === MESSAGE_TYPE.TEXT && (
-                        <ListItemText
-                          secondary={
-                            isLastFromSender && (
-                              <React.Fragment>
-                                <Typography variant="caption" align="center">
-                                  {time}
-                                </Typography>
-                              </React.Fragment>
-                            )
-                          }
-                        >
-                          {message.content
-                            .split("\n")
-                            .map((text: any, index: any) => (
-                              <React.Fragment key={index}>
-                                <Typography variant="body1">
-                                  {text}
-                                  <br />
-                                </Typography>
-                              </React.Fragment>
-                            ))}
-                        </ListItemText>
-                      )}
-                    </Box>
-                  </Tooltip>
-                  {numOfEmoji != 0 && (
-                    <Badge
-                      badgeContent={emojiContent}
-                      color="primary"
-                      anchorOrigin={{
-                        vertical: "bottom",
-                        horizontal: "right",
-                      }}
-                      sx={{
-                        position: "absolute",
-                        bottom: 0,
-                        ...(!isMyMessage ? { right: 0 } : { left: 0 }),
-                        "& .MuiBadge-badge": {
-                          width: "auto",
-                          height: "24px",
-                          fontSize: "14px",
-                          padding: "0 8px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          whiteSpace: "nowrap",
-                        },
-                      }}
+                  {isMyMessage && showMessageOptionIndex == index && (
+                    <MessageOptions
+                      index={index}
+                      message={message}
+                      handleOpenReaction={handleOpenReaction}
+                      handleThreadMessage={handleThreadMessage}
                     />
                   )}
-                </Box>
 
-                {!isMyMessage && showMessageOptionIndex == index && (
-                  <Box id={`message-option-${index}`}>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleOpenReaction(index, message._id)}
-                    >
-                      <ThumbUpIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={() => console.log("Hello 2")}
-                    >
-                      <ReplyIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={() => console.log("Hello 3")}
-                    >
-                      <MoreVertIcon fontSize="small" />
-                    </IconButton>
+                  <Box
+                    sx={{
+                      backgroundColor: isMyMessage ? "#bbdefb" : "#e0e0e0",
+                      borderRadius: "8px",
+                      width: "fit-content",
+                      maxWidth:
+                        message.messageType === MESSAGE_TYPE.IMAGE
+                          ? "30%"
+                          : "40%",
+                      padding: "4px 8px",
+                      wordWrap: "break-word",
+                      whiteSpace: "pre-wrap",
+                      position: "relative",
+                      marginTop: message.thread ? "25px" : "0",
+                      border:
+                        highlightedMessageId == message._id
+                          ? "2px solid white"
+                          : "none",
+                    }}
+                    className={
+                      highlightedMessageId === message._id ? "highlighted" : ""
+                    }
+                    id={`message-box-${index}`}
+                    ref={lastMessageRef}
+                  >
+                    {message.thread && (
+                      <Box
+                        onClick={() =>
+                          scrollToThreadMessage(message.thread._id)
+                        }
+                      >
+                        <Paper
+                          elevation={3}
+                          sx={{
+                            position: "absolute",
+                            top: -25,
+                            ...(isMyMessage ? { right: 0 } : { left: 0 }),
+                            width: "auto",
+                            height: "24px",
+                            fontSize: "14px",
+                            padding: "0 8px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          <ReplyRoundedIcon fontSize="small" />
+                          {threadContent}
+                        </Paper>
+                      </Box>
+                    )}
+
+                    <Tooltip title={fullTime} placement="left-start">
+                      <Box>
+                        {message.messageType === MESSAGE_TYPE.IMAGE && (
+                          <Box
+                            component="div"
+                            sx={{
+                              width: "100%",
+                            }}
+                          >
+                            {loadingImage && (
+                              <Box
+                                sx={{
+                                  minHeight: "300px",
+                                  width: "200px",
+                                  ...sxCenterRowFlex,
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <CircularProgress color="secondary" />
+                              </Box>
+                            )}
+                            <img
+                              style={{
+                                width: "100%",
+                                height: "auto",
+                                objectFit: "cover",
+                                display: loadingImage ? "none" : "block",
+                              }}
+                              src={message.attachmentLink}
+                              alt={loadingImageFail ? "Image Fail" : "Image"}
+                              onLoad={handleImageLoad}
+                              onError={handleImageError}
+                              onClick={() =>
+                                handleOpenPreviewImageDialog(
+                                  message.attachmentLink
+                                )
+                              }
+                            />
+                          </Box>
+                        )}
+
+                        {message.messageType === MESSAGE_TYPE.FILE && (
+                          <Box sx={{ ...sxCenterRowFlex }}>
+                            <Button
+                              variant="outlined"
+                              startIcon={<DescriptionIcon />}
+                              onClick={() => {
+                                saveAs(
+                                  message.attachmentLink,
+                                  message.attachmentName
+                                );
+                              }}
+                            >
+                              {message.attachmentName ?? "File"}
+                            </Button>
+                          </Box>
+                        )}
+
+                        {message.messageType === MESSAGE_TYPE.TEXT && (
+                          <ListItemText
+                            secondary={
+                              isLastFromSender && (
+                                <React.Fragment>
+                                  <Typography variant="caption" align="center">
+                                    {time}
+                                  </Typography>
+                                </React.Fragment>
+                              )
+                            }
+                          >
+                            {message.content
+                              .split("\n")
+                              .map((text: any, index: any) => (
+                                <React.Fragment key={index}>
+                                  <Typography variant="body1">
+                                    {text}
+                                    <br />
+                                  </Typography>
+                                </React.Fragment>
+                              ))}
+                          </ListItemText>
+                        )}
+                      </Box>
+                    </Tooltip>
+                    {numOfEmoji != 0 && (
+                      <Badge
+                        badgeContent={emojiContent}
+                        color="primary"
+                        anchorOrigin={{
+                          vertical: "bottom",
+                          horizontal: "right",
+                        }}
+                        sx={{
+                          position: "absolute",
+                          bottom: 0,
+                          ...(!isMyMessage ? { right: 0 } : { left: 0 }),
+                          "& .MuiBadge-badge": {
+                            width: "auto",
+                            height: "24px",
+                            fontSize: "14px",
+                            padding: "0 8px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            whiteSpace: "nowrap",
+                          },
+                        }}
+                      />
+                    )}
                   </Box>
-                )}
-              </ListItem>
+
+                  {!isMyMessage && showMessageOptionIndex == index && (
+                    <MessageOptions
+                      index={index}
+                      message={message}
+                      handleOpenReaction={handleOpenReaction}
+                      handleThreadMessage={handleThreadMessage}
+                    />
+                  )}
+                </ListItem>
+              </React.Fragment>
             );
           })}
           <div ref={lastMessageRef} />

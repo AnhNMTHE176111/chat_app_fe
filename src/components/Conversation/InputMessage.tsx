@@ -42,12 +42,14 @@ interface InputMessageProps {
     fileDestination: string
   ) => Promise<void>;
   progressUpload: number | null;
+  threadMessage: any;
 }
 
 export const InputMessage: FC<InputMessageProps> = ({
   conversationId,
   handleSendMessage,
   progressUpload,
+  threadMessage,
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [fileDestination, setFileDestination] = useState<string>("");
@@ -59,7 +61,7 @@ export const InputMessage: FC<InputMessageProps> = ({
   useEffect(() => {
     setMessage("");
     inputRef.current?.focus();
-  }, [conversationId]);
+  }, [conversationId, threadMessage]);
 
   const handleClickEmoji = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -95,9 +97,9 @@ export const InputMessage: FC<InputMessageProps> = ({
   };
 
   const handleSubmit = (e: React.FormEvent) => {
-    if (message != "" || file != null) {
+    if (message.trim() != "" || file != null) {
       e.preventDefault();
-      handleSendMessage(message, file, fileDestination).then(() => {
+      handleSendMessage(message.trim(), file, fileDestination).then(() => {
         setMessage("");
         setFile(null);
         setFileDestination("");

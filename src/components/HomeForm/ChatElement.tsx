@@ -10,6 +10,7 @@ import {
 import { AvatarOnline } from "./AvatarOnline";
 import moment from "moment";
 import { SOCKET_EVENT } from "../../constants";
+import { getSubjectName, slideText } from "../../helpers/utils";
 
 const StyledChatBox = styled(Box)(({ theme }) => ({
   "&:hover": {
@@ -99,21 +100,15 @@ export const ChatElement = ({ data }: { data: any }) => {
   };
 
   // Cannot access 'user' before initialization
-  function sideText(text: string) {
-    return text.length > 20 ? `${text.slice(0, 20)}...` : text;
-  }
 
   function modifyContentLastestMessage(objectMessage: any) {
-    const subjectName = objectMessage.sender_id.fullName
-      .split(" ")
-      .filter((word: string) => /^[a-zA-Z]+$/.test(word))
-      .pop();
+    const subjectName = getSubjectName(objectMessage.sender_id.fullName);
     let subject = objectMessage.sender_id._id == user?.id ? "You" : subjectName;
 
     let content = "";
     switch (objectMessage.messageType) {
       case MESSAGE_TYPE.TEXT:
-        content = sideText(objectMessage.content);
+        content = slideText(objectMessage.content, 20);
         if (conversation.type === GROUP_CONVERSATION) {
           return `${subject}: ${content}`;
         }
@@ -175,7 +170,7 @@ export const ChatElement = ({ data }: { data: any }) => {
                 color={messageColor}
                 fontWeight={messageWeight}
               >
-                {sideText(conversation.title)}
+                {slideText(conversation.title, 20)}
               </Typography>
               <Typography
                 variant="caption"
