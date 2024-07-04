@@ -69,7 +69,7 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
       }
     }
   }, [newMessage]);
-  
+
   useEffect(() => {
     handleBackToConversationInforTab();
   }, [id]);
@@ -95,6 +95,17 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
         setFiles(result.data);
       });
     }
+  };
+
+  const [errorImage, setErrorImage] = useState<any[]>();
+
+  const handleErrorImage = (imageId: any) => {
+    setErrorImage((prev: any) => {
+      if (!prev) {
+        return [imageId];
+      }
+      return [...prev, imageId];
+    });
   };
 
   return (
@@ -226,13 +237,24 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
                   {medias.map((item) => (
                     <ImageListItem key={item._id}>
                       <img
-                        srcSet={`${item.attachmentLink}?w=480`}
-                        src={`${item.attachmentLink}?w=480`}
+                        srcSet={`${
+                          errorImage?.includes(item._id)
+                            ? "/default_error.png"
+                            : item.attachmentLink
+                        }?w=480`}
+                        src={`${
+                          errorImage?.includes(item._id)
+                            ? "/default_error.png"
+                            : item.attachmentLink
+                        }?w=480`}
                         alt={item.attachmentName}
                         loading="lazy"
-                        onClick={() =>
-                          handleOpenPreviewImageDialog(item.attachmentLink)
-                        }
+                        onClick={() => {
+                          if (!errorImage?.includes(item._id)) {
+                            handleOpenPreviewImageDialog(item.attachmentLink);
+                          }
+                        }}
+                        onError={() => handleErrorImage(item._id)}
                       />
                     </ImageListItem>
                   ))}
