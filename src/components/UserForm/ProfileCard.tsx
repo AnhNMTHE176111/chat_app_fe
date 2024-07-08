@@ -9,18 +9,20 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { getProfileByPreview } from "../../services";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAppDispatch } from "../../hooks";
 import { showNotificationAction } from "../../stores/notificationActionSlice";
 
-export const ProfileCard = ({
-  id,
-  open,
-  onClose,
-}: {
+interface ProfileCardProps {
   id: string;
   open: boolean;
   onClose: () => void;
+}
+
+export const ProfileCard: React.FC<ProfileCardProps> = ({
+  id,
+  open,
+  onClose,
 }) => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);

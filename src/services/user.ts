@@ -23,7 +23,18 @@ export interface ProfilePreviewParams {
   gender: string;
 }
 
-export interface ChangeProfileInformationParams extends BaseResponse {
+export interface FriendListParams {
+  id: string;
+  fullName: string;
+  avatar: string;
+  senderId: string;
+}
+
+export interface GetFriendListResponse extends BaseResponse {
+  data: FriendListParams[]
+}
+
+export interface ChangeProfileInformationResponse extends BaseResponse {
 
 }
 
@@ -52,11 +63,48 @@ export const getProfile = async (
 export const changeInformation = async (
   id: string,
   data: ChangeProfileInformationParams
-): Promise<ChangeProfileInformationParams> => {
-  const res = await client.put<ChangeProfileInformationParams>(
+): Promise<ChangeProfileInformationResponse> => {
+  const res = await client.put<ChangeProfileInformationResponse>(
     URI.PROFILE_USER.replace(":id", id),
     data
   );
+  return res.data;
+};
+
+export const getFriendList = async (
+  id: string
+): Promise<GetFriendListResponse> => {
+  const res = await client.get<GetFriendListResponse>(URI.FRIEND_LIST.replace(":id", id));
+  return res.data;
+};
+
+export const getFriendRequestList = async (
+  id: string
+): Promise<GetFriendListResponse> => {
+  const res = await client.get<GetFriendListResponse>(URI.FRIEND_REQUEST_LIST.replace(":id", id));
+  return res.data;
+};
+
+export const changeFriendStatus = async (
+  id: string,
+  data: { friendId: string, status: string }
+): Promise<BaseResponse> => {
+  const res = await client.put<BaseResponse>(URI.CHANGE_FRIEND_STATUS.replace(":id", id), data);
+  return res.data;
+};
+
+export const addFriendRequest = async (
+  id: string,
+  data: { friendId: string }
+): Promise<BaseResponse> => {
+  const res = await client.put<BaseResponse>(URI.ADD_FRIEND_REQUEST.replace(":id", id), data);
+  return res.data;
+};
+
+export const findUserByEmail = async (
+  email: string
+): Promise<GetFriendListResponse> => {
+  const res = await client.get<GetFriendListResponse>(URI.FIND_USER_BY_EMAIL.replace(":email", email));
   return res.data;
 };
 

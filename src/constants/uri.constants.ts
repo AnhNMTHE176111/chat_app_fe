@@ -31,6 +31,13 @@ export const URI = {
   // profile
   PROFILE_USER: "/user/profile/:id",
   PROFILE_PREVIEW: "/user/profile/preview/:id",
+
+  // friend
+  FRIEND_LIST: "/user/friends/:id",
+  FRIEND_REQUEST_LIST: "/user/friend-requests/:id",
+  CHANGE_FRIEND_STATUS: "/user/change-friend-status/:id",
+  ADD_FRIEND_REQUEST: "/user/add-friend/:id",
+  FIND_USER_BY_EMAIL: "/user/find-by-email/:email",
 };
 
 export const NON_AUTHORIZATION_API = [URI.FORGOT_PASSWORD, URI.LOGIN];

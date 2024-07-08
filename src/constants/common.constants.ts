@@ -9,3 +9,9 @@ export const GROUP_CONVERSATION = "group";
 const ADMIN_ROLE = "admin";
 const NORMAL_ROLE = "normal";
 export const ROLES = { ADMIN_ROLE, NORMAL_ROLE };
+
+export const FRIEND_STATUS = {
+  PENDING: "pending",
+  ACCEPT: "accept",
+  REJECT: "reject",
+}

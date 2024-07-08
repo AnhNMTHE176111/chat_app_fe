@@ -12,6 +12,7 @@ import {
   ChatPage,
   CallPage,
   Profile,
+  ContactsPage,
 } from "../pages";
 import { RegisterSuccess } from "../components";
 import { AuthGuard, GuestGuard, RoleBasedGuard } from "../guards";
@@ -107,6 +108,10 @@ export const routes: RouteObject[] = [
       {
         path: "/profile",
         element: <Profile />,
+      },
+      {
+        path: "/contacts",
+        element: <ContactsPage />,
       },
       {
         path: "/about",
