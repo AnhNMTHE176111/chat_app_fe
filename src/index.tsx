@@ -9,10 +9,14 @@ import router from "./routers";
 import { Provider } from "react-redux";
 import { store } from "./stores";
 import { AuthProvider } from "./hooks";
+import { DOCUMENT_TITLE } from "./constants";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
+
+document.title = DOCUMENT_TITLE;
+
 root.render(
   <Provider store={store}>
     <AuthProvider>

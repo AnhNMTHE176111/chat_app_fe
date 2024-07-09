@@ -26,6 +26,7 @@ export const URI = {
 
   // Conversation
   GET_ALL_CONVERSATIONS: "/conversation/list",
+  GET_CONVERSATION: "/conversation/:conversation_id",
   GET_MESSAGE_CONVERSATION: "/conversation/:conversation_id/messages",
   CREATE_SINGLE_CONVERSATION: "/conversation/create-single-conversation",
   CREATE_GROUP_CONVERSATION: "/conversation/create-group-conversation",
@@ -40,6 +41,10 @@ export const URI = {
   CHANGE_FRIEND_STATUS: "/user/change-friend-status/:id",
   ADD_FRIEND_REQUEST: "/user/add-friend/:id",
   FIND_USER_BY_EMAIL: "/user/find-by-email/:email",
+  
+  GET_MEDIA_CONVERSATION: "/conversation/:conversation_id/medias",
+  GET_FILE_CONVERSATION: "/conversation/:conversation_id/files",
+  LOAD_MORE_MESSAGE_CONVERSATION: "/conversation/:conversation_id/messages/loadmore",
 };
 
 export const NON_AUTHORIZATION_API = [URI.FORGOT_PASSWORD, URI.LOGIN];

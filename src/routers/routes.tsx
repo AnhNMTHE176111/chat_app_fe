@@ -18,7 +18,7 @@ import { RegisterSuccess } from "../components";
 import { AuthGuard, GuestGuard, RoleBasedGuard } from "../guards";
 import { ROLES } from "../constants";
 import { HomeLayout } from "../layouts";
-import { SocketContextProvider } from "../providers";
+import { MessageContextProvider, SocketContextProvider } from "../providers";
 
 export const routes: RouteObject[] = [
   /** Unauthenticated Route */
@@ -80,9 +80,11 @@ export const routes: RouteObject[] = [
       <AuthGuard>
         <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
           <SocketContextProvider>
-            <HomeLayout>
-              <Outlet />
-            </HomeLayout>
+            <MessageContextProvider>
+              <HomeLayout>
+                <Outlet />
+              </HomeLayout>
+            </MessageContextProvider>
           </SocketContextProvider>
         </RoleBasedGuard>
       </AuthGuard>

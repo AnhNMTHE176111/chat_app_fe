@@ -9,6 +9,7 @@ import {
 import { useAuth } from "../hooks";
 import { Socket, io } from "socket.io-client";
 import { URI } from "../constants";
+import { SOCKET_EVENT } from "../constants";
 
 interface SocketContextType {
   socket: Socket;
@@ -32,13 +33,12 @@ export const SocketContextProvider: FC<{ children: ReactNode }> = ({
           email: user?.email,
         },
       });
-      newSocket.on("getOnlineUsers", (data) => {
-        console.log("getOnlineUsers", data);
+      newSocket.on(SOCKET_EVENT.GET_ONLINE_USERS, (data) => {
         setOnlineUsers(data);
       });
       setSocket(newSocket);
       return () => {
-        newSocket.off("getOnlineUsers");
+        newSocket.off(SOCKET_EVENT.GET_ONLINE_USERS);
         newSocket.close();
       };
     } else {
