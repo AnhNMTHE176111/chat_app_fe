@@ -19,6 +19,8 @@ import React from "react";
 import { Message, MoreVert, PersonAdd, Preview } from "@mui/icons-material";
 import {
   addFriendRequest,
+  createSingleConversation,
+  CreateSingleConversationParams,
   findUserByEmail,
   FriendListParams,
 } from "../../../services";
@@ -26,6 +28,7 @@ import { useAppDispatch, useAuth } from "../../../hooks";
 import { showNotificationAction } from "../../../stores/notificationActionSlice";
 import { ProfileCard } from "../../../components";
 import { useNavigate } from "react-router-dom";
+import { SINGLE_CONVERSATION } from "../../../constants";
 
 interface Option {
   label: string;
@@ -60,7 +63,6 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({
     userId: string
   ) => {
     setAnchorEl(event.currentTarget);
-    console.log(userId);
     setSelectedUserId(userId);
   };
 
@@ -83,7 +85,6 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({
     findUserByEmail(email)
       .then((resp) => {
         if (resp.success) {
-          console.log(resp.data);
           setFoundUsers(resp.data);
         }
       })
@@ -102,7 +103,24 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({
 
   const onMessage = (id: string) => {
     if (user?.id) {
-      navigate(`/chat/${id}`);
+      const data: CreateSingleConversationParams = {
+        participants: [user.id, id],
+        type: SINGLE_CONVERSATION,
+      };
+      createSingleConversation(data)
+        .then((res) => {
+          if (res.success) {
+            navigate(`/chat/${id}`);
+          }
+        })
+        .catch((error) => {
+          dispatchNoti(
+            showNotificationAction({
+              message: "Something went wrong",
+              severity: "error",
+            })
+          );
+        });
     }
   };
 
@@ -112,10 +130,11 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({
         friendId: id,
       })
         .then((res) => {
-          console.log(res);
           if (res.success) {
             setSelectedUserId(null);
             setFoundUsers([]);
+            setEmail("");
+            onCloseDialog();
             dispatchNoti(
               showNotificationAction({
                 message: "Request sent successfully",
@@ -125,7 +144,6 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({
           }
         })
         .catch((err) => {
-          console.log(err);
           dispatchNoti(
             showNotificationAction({
               message: err?.message?.data?.message || "Something went wrong",

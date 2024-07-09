@@ -27,6 +27,8 @@ export const URI = {
   // Conversation
   GET_ALL_CONVERSATIONS: "/conversation/list",
   GET_MESSAGE_CONVERSATION: "/conversation/:conversation_id/messages",
+  CREATE_SINGLE_CONVERSATION: "/conversation/create-single-conversation",
+  CREATE_GROUP_CONVERSATION: "/conversation/create-group-conversation",
 
   // profile
   PROFILE_USER: "/user/profile/:id",

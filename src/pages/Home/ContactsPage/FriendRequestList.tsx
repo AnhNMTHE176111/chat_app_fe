@@ -1,3 +1,12 @@
+import { useEffect, useState } from "react";
+import { useAppDispatch, useAuth, useSocket } from "../../../hooks";
+import {
+  changeFriendStatus,
+  FriendListParams,
+  getFriendRequestList,
+} from "../../../services";
+import { showNotificationAction } from "../../../stores/notificationActionSlice";
+import { FRIEND_STATUS } from "../../../constants";
 import {
   Button,
   Card,
@@ -8,16 +17,7 @@ import {
   Skeleton,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
-import {
-  FriendListParams,
-  changeFriendStatus,
-  getFriendRequestList,
-} from "../../../services";
-import { useAppDispatch, useAuth } from "../../../hooks";
-import { showNotificationAction } from "../../../stores/notificationActionSlice";
 import { ProfileCard } from "../../../components";
-import { FRIEND_STATUS } from "../../../constants";
 
 export const FriendRequestList = ({ searchTerm }: { searchTerm: string }) => {
   const [openProfileDialog, setOpenProfileDialog] = useState(false);
@@ -26,28 +26,43 @@ export const FriendRequestList = ({ searchTerm }: { searchTerm: string }) => {
   const [friendRequests, setFriendRequests] = useState<FriendListParams[]>([]);
   const [loading, setLoading] = useState(true);
   const dispatchNoti = useAppDispatch();
+  const { socket } = useSocket();
 
   useEffect(() => {
-    if (user?.id) {
-      getFriendRequestList(user.id)
-        .then((res) => {
-          if (res.success) {
-            setFriendRequests(res.data);
-          }
-        })
-        .catch((err) => {
-          dispatchNoti(
-            showNotificationAction({
-              message: err?.message?.data?.message || "Something went wrong",
-              severity: "error",
-            })
-          );
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+    if (user?.id && socket) {
+      const fetchFriendRequests = () => {
+        getFriendRequestList(user.id)
+          .then((res) => {
+            if (res.success) {
+              setFriendRequests(res.data);
+            }
+          })
+          .catch((err) => {
+            dispatchNoti(
+              showNotificationAction({
+                message: err?.message?.data?.message || "Something went wrong",
+                severity: "error",
+              })
+            );
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      };
+
+      fetchFriendRequests();
+
+      socket.on("friendStatusChanged", (userId: string) => {
+        if (userId === user?.id) {
+          fetchFriendRequests();
+        }
+      });
+
+      return () => {
+        socket.off("friendStatusChanged");
+      };
     }
-  }, [user?.id]);
+  }, [user?.id, socket]);
 
   const handleProfileClick = (id: string) => {
     setSelectedUserId(id);
@@ -63,6 +78,7 @@ export const FriendRequestList = ({ searchTerm }: { searchTerm: string }) => {
         .then((res) => {
           if (res.success) {
             setFriendRequests(friendRequests.filter((item) => item.id !== id));
+            socket.emit("friendStatusChanged", user.id);
           }
         })
         .catch((err) => {
@@ -85,6 +101,7 @@ export const FriendRequestList = ({ searchTerm }: { searchTerm: string }) => {
         .then((res) => {
           if (res.success) {
             setFriendRequests(friendRequests.filter((item) => item.id !== id));
+            socket.emit("friendStatusChanged", user.id);
           }
         })
         .catch((err) => {

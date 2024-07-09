@@ -1,46 +1,63 @@
 import { Grid, Skeleton } from "@mui/material";
-import { useAppDispatch, useAuth } from "../../../hooks";
+import { useAppDispatch, useAuth, useSocket } from "../../../hooks";
 import { useEffect, useState } from "react";
 import { showNotificationAction } from "../../../stores/notificationActionSlice";
 import {
+  CreateSingleConversationParams,
   FriendListParams,
   changeFriendStatus,
+  createSingleConversation,
   getFriendList,
 } from "../../../services";
 import { PersonCard, ProfileCard } from "../../../components";
 import { useNavigate } from "react-router-dom";
-import { FRIEND_STATUS } from "../../../constants";
+import { FRIEND_STATUS, SINGLE_CONVERSATION } from "../../../constants";
 
 export const FriendList = ({ searchTerm }: { searchTerm: string }) => {
-  const { user, dispatch } = useAuth();
+  const { user } = useAuth();
   const [friends, setFriends] = useState<FriendListParams[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [openProfileDialog, setOpenProfileDialog] = useState(false);
   const [loading, setLoading] = useState(true);
   const dispatchNoti = useAppDispatch();
   const navigate = useNavigate();
+  const { socket } = useSocket();
 
   useEffect(() => {
-    if (user?.id) {
-      getFriendList(user.id)
-        .then((res) => {
-          if (res.success) {
-            setFriends(res.data);
-          }
-        })
-        .catch((err) => {
-          dispatchNoti(
-            showNotificationAction({
-              message: err?.message?.data?.message || "Something went wrong",
-              severity: "error",
-            })
-          );
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+    if (user?.id && socket) {
+      const fetchFriendList = () => {
+        getFriendList(user.id)
+          .then((res) => {
+            if (res.success) {
+              setFriends(res.data);
+            }
+          })
+          .catch((err) => {
+            dispatchNoti(
+              showNotificationAction({
+                message: err?.message?.data?.message || "Something went wrong",
+                severity: "error",
+              })
+            );
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      };
+
+      fetchFriendList();
+
+      socket.on("friendStatusChanged", (userId: string) => {
+        if (userId === user?.id) {
+          fetchFriendList();
+        }
+      });
+
+      return () => {
+        socket.off("friendStatusChanged");
+      };
     }
-  }, [user?.id]);
+  }, [user?.id, socket]);
 
   const handleProfileClick = (id: string) => {
     setSelectedUserId(id);
@@ -48,7 +65,28 @@ export const FriendList = ({ searchTerm }: { searchTerm: string }) => {
   };
 
   const handleMessageClick = (id: string) => {
-    navigate(`/chat/${id}`);
+    if (user?.id) {
+      const data: CreateSingleConversationParams = {
+        participants: [user.id, id],
+        type: SINGLE_CONVERSATION,
+      };
+      createSingleConversation(data)
+        .then((res) => {
+          if (res.success) {
+            console.log(res.data);
+            navigate(`/chat/${res.data.id}`);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          dispatchNoti(
+            showNotificationAction({
+              message: "Something went wrong",
+              severity: "error",
+            })
+          );
+        });
+    }
   };
 
   const handleUnfriendClick = (id: string) => {
