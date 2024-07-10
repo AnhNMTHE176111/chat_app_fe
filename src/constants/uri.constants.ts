@@ -41,10 +41,12 @@ export const URI = {
   CHANGE_FRIEND_STATUS: "/user/change-friend-status/:id",
   ADD_FRIEND_REQUEST: "/user/add-friend/:id",
   FIND_USER_BY_EMAIL: "/user/find-by-email/:email",
-  
+  GET_FRIEND_BY_ID: "/user/friend/:id",
+
   GET_MEDIA_CONVERSATION: "/conversation/:conversation_id/medias",
   GET_FILE_CONVERSATION: "/conversation/:conversation_id/files",
-  LOAD_MORE_MESSAGE_CONVERSATION: "/conversation/:conversation_id/messages/loadmore",
+  LOAD_MORE_MESSAGE_CONVERSATION:
+    "/conversation/:conversation_id/messages/loadmore",
 };
 
 export const NON_AUTHORIZATION_API = [URI.FORGOT_PASSWORD, URI.LOGIN];
