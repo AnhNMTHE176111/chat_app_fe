@@ -4,7 +4,7 @@ import { URI } from "../constants/uri.constants";
 const client = axios.create({
   baseURL: URI.DOMAIN,
   withCredentials: true,
-  timeout: 20000,
+  timeout: 10000,
   timeoutErrorMessage: "The connection has timed out",
 });
 

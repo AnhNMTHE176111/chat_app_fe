@@ -1,9 +1,7 @@
 /// <reference types="react-scripts" />
 
-interface ImportMetaEnv {
-  readonly BASE_API: string;
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
+declare namespace NodeJS {
+    interface ProcessEnv {
+      readonly REACT_APP_BASE_API: string;
+    }
+  }
