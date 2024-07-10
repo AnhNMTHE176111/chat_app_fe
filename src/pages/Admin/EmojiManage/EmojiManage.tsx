@@ -17,10 +17,13 @@ import { DataGrid, GridColDef, GridSearchIcon } from "@mui/x-data-grid";
 import EditEmoji from "./EditEmoji";
 import AddEmoji from "./AddEmoji";
 import TableSkeleton from "../Dashboard/TableSkeleton";
+import { deleteEmojis, updateEmojis } from "../../../services";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { showNotificationAction } from "../../../stores/notificationActionSlice";
 
 // Sample data type
 interface Emoji {
-  id: number;
+  id: string;
   emoji: string;
   name: string;
   description: string;
@@ -34,39 +37,43 @@ const EmojiManage: React.FC = () => {
   const [selectEmoji, setSelectEmoji] = useState<Emoji | null>(null);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [deleteEmojiId, setDeleteEmojiId] = useState<number | null>(null);
+  const [deleteEmojiId, setDeleteEmojiId] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
-
+  
+  const notificationAction = useAppSelector(
+    (state) => state.notificationAction
+  );
+  const dispatch = useAppDispatch();
   useEffect(() => {
     setTimeout(() => {
       const initialSampleData: Emoji[] = [
-        { id: 1, name: "Smile", description: "A smiling face", imageURL: "https://example.com/smile.png", emoji: "😊" },
-        { id: 2, name: "Frown", description: "A frowning face", imageURL: "https://example.com/frown.png", emoji: "☹️" },
-        { id: 3, name: "Heart", description: "A heart", imageURL: "https://example.com/heart.png", emoji: "❤️" },
-        { id: 4, name: "Thinking", description: "A thinking face", imageURL: "https://example.com/thinking.png", emoji: "🤔" },
-        { id: 5, name: "Laughing", description: "A laughing face", imageURL: "https://example.com/laughing.png", emoji: "😂" },
-        { id: 6, name: "Broken Heart", description: "A broken heart", imageURL: "https://example.com/broken_heart.png", emoji: "💔" },
-        { id: 7, name: "Upside Down", description: "An upside-down face", imageURL: "https://example.com/upside_down.png", emoji: "🙃" },
-        { id: 8, name: "Raised Hands", description: "Raised hands", imageURL: "https://example.com/raised_hands.png", emoji: "🙌" },
-        { id: 9, name: "Star-Struck", description: "A star-struck face", imageURL: "https://example.com/star_struck.png", emoji: "🤩" },
-        { id: 10, name: "Mind Blown", description: "A mind blown face", imageURL: "https://example.com/mind_blown.png", emoji: "🤯" },
-        { id: 11, name: "Smiling Face with Hearts", description: "A smiling face with hearts", imageURL: "https://example.com/smiling_hearts.png", emoji: "🥰" },
-        { id: 12, name: "Smiling Face with Heart-Eyes", description: "A smiling face with heart-eyes", imageURL: "https://example.com/heart_eyes.png", emoji: "😍" },
-        { id: 13, name: "Smiling Face with Open Mouth and Smiling Eyes", description: "A smiling face with open mouth and smiling eyes", imageURL: "https://example.com/open_mouth.png", emoji: "😃" },
-        { id: 14, name: "Partying Face", description: "A partying face", imageURL: "https://example.com/party.png", emoji: "🥳" },
-        { id: 15, name: "Thinking Face", description: "A thinking face", imageURL: "https://example.com/thinking.png", emoji: "🤔" },
-        { id: 16, name: "Unamused Face", description: "An unamused face", imageURL: "https://example.com/unamused.png", emoji: "😒" },
-        { id: 17, name: "Rolling Eyes", description: "A face with rolling eyes", imageURL: "https://example.com/rolling_eyes.png", emoji: "🙄" },
-        { id: 18, name: "Angry Face", description: "An angry face", imageURL: "https://example.com/angry.png", emoji: "😡" },
-        { id: 19, name: "Pleading Face", description: "A pleading face", imageURL: "https://example.com/pleading.png", emoji: "🥺" },
-        { id: 20, name: "Sleepy Face", description: "A sleepy face", imageURL: "https://example.com/sleepy.png", emoji: "😴" },
+        { id: "1", name: "Smile", description: "A smiling face", imageURL: "https://example.com/smile.png", emoji: "😊" },
+        { id: "2", name: "Frown", description: "A frowning face", imageURL: "https://example.com/frown.png", emoji: "☹️" },
+        { id: "3", name: "Heart", description: "A heart", imageURL: "https://example.com/heart.png", emoji: "❤️" },
+        { id: "4", name: "Thinking", description: "A thinking face", imageURL: "https://example.com/thinking.png", emoji: "🤔" },
+        { id: "5", name: "Laughing", description: "A laughing face", imageURL: "https://example.com/laughing.png", emoji: "😂" },
+        { id: "6", name: "Broken Heart", description: "A broken heart", imageURL: "https://example.com/broken_heart.png", emoji: "💔" },
+        { id: "7", name: "Upside Down", description: "An upside-down face", imageURL: "https://example.com/upside_down.png", emoji: "🙃" },
+        { id: "8", name: "Raised Hands", description: "Raised hands", imageURL: "https://example.com/raised_hands.png", emoji: "🙌" },
+        { id: "9", name: "Star-Struck", description: "A star-struck face", imageURL: "https://example.com/star_struck.png", emoji: "🤩" },
+        { id: "10", name: "Mind Blown", description: "A mind blown face", imageURL: "https://example.com/mind_blown.png", emoji: "🤯" },
+        { id: "11", name: "Smiling Face with Hearts", description: "A smiling face with hearts", imageURL: "https://example.com/smiling_hearts.png", emoji: "🥰" },
+        { id: "12", name: "Smiling Face with Heart-Eyes", description: "A smiling face with heart-eyes", imageURL: "https://example.com/heart_eyes.png", emoji: "😍" },
+        { id: "13", name: "Smiling Face with Open Mouth and Smiling Eyes", description: "A smiling face with open mouth and smiling eyes", imageURL: "https://example.com/open_mouth.png", emoji: "😃" },
+        { id: "14", name: "Partying Face", description: "A partying face", imageURL: "https://example.com/party.png", emoji: "🥳" },
+        { id: "15", name: "Thinking Face", description: "A thinking face", imageURL: "https://example.com/thinking.png", emoji: "🤔" },
+        { id: "16", name: "Unamused Face", description: "An unamused face", imageURL: "https://example.com/unamused.png", emoji: "😒" },
+        { id: "17", name: "Rolling Eyes", description: "A face with rolling eyes", imageURL: "https://example.com/rolling_eyes.png", emoji: "🙄" },
+        { id: "18", name: "Angry Face", description: "An angry face", imageURL: "https://example.com/angry.png", emoji: "😡" },
+        { id: "19", name: "Pleading Face", description: "A pleading face", imageURL: "https://example.com/pleading.png", emoji: "🥺" },
+        { id: "20", name: "Sleepy Face", description: "A sleepy face", imageURL: "https://example.com/sleepy.png", emoji: "😴" },
       ];
       setEmojis(initialSampleData);
       setIsLoading(false);
     }, 2000);
   }, []);
 
-  const handleEdit = (id: number) => {
+  const handleEdit = (id: string) => {
     const emojiToEdit = emojis.find((emoji) => emoji.id === id);
     if (emojiToEdit) {
       setSelectEmoji(emojiToEdit);
@@ -74,17 +81,33 @@ const EmojiManage: React.FC = () => {
     }
   };
 
-  const handleDeleteConfirmation = (id: number) => {
+  const handleDeleteConfirmation = (id: string) => {
     setShowDeleteConfirmation(true);
     setDeleteEmojiId(id);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deleteEmojiId !== null) {
-      const updatedData = emojis.filter((emoji) => emoji.id !== deleteEmojiId);
-      setEmojis(updatedData);
-      setShowDeleteConfirmation(false);
-      setDeleteEmojiId(null);
+      try {
+        await deleteEmojis(deleteEmojiId); // Gọi API để xóa emoji
+        const updatedData = emojis.filter((emoji) => emoji.id !== deleteEmojiId);
+        setEmojis(updatedData);
+        setShowDeleteConfirmation(false);
+        setDeleteEmojiId(null);
+        dispatch(
+          showNotificationAction({
+            message: "Delete Emoji Successfully!",
+            severity: "success",
+          })
+        );
+      } catch (err) {
+        dispatch(
+          showNotificationAction({
+            message: "Error deleting emoji",
+            severity: "error",
+          })
+        );
+      }
     }
   };
 
@@ -106,13 +129,28 @@ const EmojiManage: React.FC = () => {
   };
 
   const handleSaveEmoji = (editedEmoji: Emoji) => {
-    const updatedEmojis = emojis.map((emoji) =>
-      emoji.id === editedEmoji.id ? editedEmoji : emoji
-    );
-    setEmojis(updatedEmojis);
-    setOpenEditDialog(false); // Close the edit dialog after saving
-    setSelectEmoji(null); // Clear selected emoji state
+    const { id, emoji, name, description, imageURL } = editedEmoji;
+  
+    updateEmojis(id, editedEmoji)
+      .then((response) => {
+        dispatch(
+          showNotificationAction({
+            message: "Update Emoji Successfully!",
+            severity: "success",
+          })
+        );
+        setOpenEditDialog(false); // Đóng dialog sau khi lưu thành công
+      })
+      .catch((err) => {
+        dispatch(
+          showNotificationAction({
+            message: err?.response?.data?.message || "Error updating emoji.",
+            severity: "error",
+          })
+        );
+      });
   };
+  
 
   const columns: GridColDef[] = [
     { field: "id", headerName: "ID", width: 70 },

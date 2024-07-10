@@ -1,6 +1,6 @@
-import { useContext } from "react";
-import { SocketContext } from "../providers";
+// import { useContext } from "react";
+// import { SocketContext } from "../providers";
 
-export const useSocket = () => {
-  return useContext(SocketContext);
-};
+// export const useSocket = () => {
+//   return useContext(SocketContext);
+// };
