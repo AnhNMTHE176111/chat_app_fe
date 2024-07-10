@@ -31,9 +31,11 @@ export const URI = {
   CREATE_SINGLE_CONVERSATION: "/conversation/create-single-conversation",
   CREATE_GROUP_CONVERSATION: "/conversation/create-group-conversation",
 
+
   // profile
   PROFILE_USER: "/user/profile/:id",
   PROFILE_PREVIEW: "/user/profile/preview/:id",
+
 
   // friend
   FRIEND_LIST: "/user/friends/:id",
@@ -47,6 +49,15 @@ export const URI = {
   GET_FILE_CONVERSATION: "/conversation/:conversation_id/files",
   LOAD_MORE_MESSAGE_CONVERSATION:
     "/conversation/:conversation_id/messages/loadmore",
+
+  // Admin
+  GET_ALL_EMOJIS: "/emojis",
+  CREATE_EMOJI: "/add/emojis",
+  GET_EMOJIS_BY_ID: "/emojis/:id",
+  UPDATE_EMOJI: "/emojis/:id",
+  DELETE_EMOJI: "/emojis/:id",
+
+
 };
 
 export const NON_AUTHORIZATION_API = [URI.FORGOT_PASSWORD, URI.LOGIN];

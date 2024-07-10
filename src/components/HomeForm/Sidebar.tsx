@@ -20,8 +20,10 @@ import {
   Button,
 } from "@mui/material";
 import { NavLink, useLocation } from "react-router-dom";
+
 import { signout, useAppDispatch, useAuth } from "../../hooks";
 import { logout } from "../../services";
+
 
 function Sidebar() {
   const location = useLocation();
@@ -58,6 +60,17 @@ function Sidebar() {
 
   const handleLogoutCancel = () => {
     setLogoutDialogOpen(false);
+
+  const handleLogout = () => {
+    logout()
+      .then(() => {
+        dispatch(signout());
+        return;
+      })
+      .catch((reason: any) => {
+        console.log("Logout Fail", reason);
+        return;
+      });
   };
 
   const menu = [

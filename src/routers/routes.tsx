@@ -18,8 +18,17 @@ import { RegisterSuccess } from "../components";
 import { AuthGuard, GuestGuard, RoleBasedGuard } from "../guards";
 import { ROLES } from "../constants";
 import { HomeLayout } from "../layouts";
+
 import { MessageContextProvider, SocketContextProvider } from "../providers";
 
+
+import Dashboard from "../pages/Admin/Dashboard/Dashboard";
+import EmojiManager from "../pages/Admin/EmojiManage/EmojiManage";
+import UserManager from "../pages/Admin/UserManage/UserManage";
+import AddEmojiPage from "../pages/Admin/EmojiManage/AddEmoji";
+import AddEmoji from "../pages/Admin/EmojiManage/AddEmoji";
+import { logout } from "../services";
+// import UserManager from "../pages/Admin/UserManage";
 export const routes: RouteObject[] = [
   /** Unauthenticated Route */
   {
@@ -74,8 +83,43 @@ export const routes: RouteObject[] = [
     ],
   },
 
-  /** Authenticated Route */
+  // /** Authenticated Route */
+  // {
+  //   element: (
+  //     <AuthGuard>
+  //       <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
+  //         <SocketContextProvider>
+  //           <HomeLayout>
+  //             <Outlet />
+  //           </HomeLayout>
+  //         </SocketContextProvider>
+  //       </RoleBasedGuard>
+  //     </AuthGuard>
+  //   ),
+  //   errorElement: <NotFoundPage />,
+  //   children: [
+  //     {
+  //       path: "/",
+  //       element: <ChatPage />,
+  //     },
+  //     {
+  //       path: "/chat/:id",
+  //       element: <ChatPage />,
+  //     },
+  //     {
+  //       path: "/video-call",
+  //       element: <CallPage />,
+  //     },
+  //     {
+  //       path: "/logout",
+  //       element: <div>Logout...</div>,
+  //     },
+  //   ],
+  // },
+
+  /** Admin Route */
   {
+    path: "/admin",
     element: (
       <AuthGuard>
         <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
@@ -89,19 +133,18 @@ export const routes: RouteObject[] = [
         </RoleBasedGuard>
       </AuthGuard>
     ),
-    errorElement: <NotFoundPage />,
     children: [
       {
-        path: "/home",
-        element: <App />,
+        path: "dashboard",
+        element: <Dashboard />,
       },
       {
-        path: "/",
-        element: <ChatPage />,
+        path: "manage-user",
+        element: <UserManager />,
       },
       {
-        path: "/chat/:id",
-        element: <ChatPage />,
+        path: "manage-emoji",
+        element: <EmojiManager />,
       },
       {
         path: "/video-call",
@@ -120,23 +163,7 @@ export const routes: RouteObject[] = [
         element: <App />,
       },
     ],
-  },
-
-  /** Admin Route */
-  {
-    path: "/admin",
-    element: (
-      <AuthGuard>
-        <RoleBasedGuard accessibleRoles={[ROLES.ADMIN_ROLE]}>
-          <Outlet />
-        </RoleBasedGuard>
-      </AuthGuard>
-    ),
-    children: [
-      {
-        path: "",
-        element: <App />,
-      },
+  }, 
     ],
   },
 ];
