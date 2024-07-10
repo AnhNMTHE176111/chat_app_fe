@@ -12,12 +12,15 @@ import {
   ChatPage,
   CallPage,
   Profile,
+  ContactsPage,
 } from "../pages";
 import { RegisterSuccess } from "../components";
 import { AuthGuard, GuestGuard, RoleBasedGuard } from "../guards";
 import { ROLES } from "../constants";
 import { HomeLayout } from "../layouts";
-// import { SocketContextProvider } from "../providers";
+
+import { MessageContextProvider, SocketContextProvider } from "../providers";
+
 
 import Dashboard from "../pages/Admin/Dashboard/Dashboard";
 import EmojiManager from "../pages/Admin/EmojiManage/EmojiManage";
@@ -118,13 +121,17 @@ export const routes: RouteObject[] = [
   {
     path: "/admin",
     element: (
-      // <AuthGuard>
-      // <RoleBasedGuard accessibleRoles={[ROLES.ADMIN_ROLE]}>
-      <App>
-        <Outlet />
-      </App>
-      // </RoleBasedGuard>
-      // </AuthGuard>
+      <AuthGuard>
+        <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
+          <SocketContextProvider>
+            <MessageContextProvider>
+              <HomeLayout>
+                <Outlet />
+              </HomeLayout>
+            </MessageContextProvider>
+          </SocketContextProvider>
+        </RoleBasedGuard>
+      </AuthGuard>
     ),
     children: [
       {
@@ -148,15 +155,15 @@ export const routes: RouteObject[] = [
         element: <Profile />,
       },
       {
+        path: "/contacts",
+        element: <ContactsPage />,
+      },
+      {
         path: "/about",
         element: <App />,
       },
     ],
-  },
-
-
-      
-      
+  }, 
     ],
   },
 ];

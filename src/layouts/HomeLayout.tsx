@@ -1,12 +1,15 @@
 import Sidebar from "../components/HomeForm/Sidebar";
 import Header from "../components/HomeForm/Header";
-import { Grid } from "@mui/material";
+import { Drawer, Grid } from "@mui/material";
+import { useDrawerState } from "../hooks";
 
 interface HomeLayoutProps {
   children: React.ReactNode;
 }
 
 export const HomeLayout: React.FC<HomeLayoutProps> = ({ children }) => {
+  const { open } = useDrawerState();
+
   return (
     <Grid
       container
@@ -26,7 +29,7 @@ export const HomeLayout: React.FC<HomeLayoutProps> = ({ children }) => {
         </Grid>
         <Grid
           item
-          xs={10.5}
+          xs={open ? 9 : 10.5}
           style={{
             backgroundColor: "white",
             height: "97%",

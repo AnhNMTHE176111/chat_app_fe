@@ -1,3 +1,4 @@
 export * from "./ChatPage";
 export * from "./CallPage";
-export * from "./Profile/Profile"
+export * from "./Profile";
+export * from "./ContactsPage";
