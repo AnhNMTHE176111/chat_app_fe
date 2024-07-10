@@ -1,26 +1,31 @@
 import { Box, Grid, IconButton, ListItemText, Tooltip } from "@mui/material";
-import React, { FC } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { AvatarOnline } from "../HomeForm";
-import { useDrawerState } from "../../hooks";
+import { useCall, useDrawerState, useSocket } from "../../hooks";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import CallIcon from "@mui/icons-material/Call";
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
 import ViewSidebarOutlinedIcon from "@mui/icons-material/ViewSidebarOutlined";
 
-interface HeaderConversation {
+interface HeaderConversationProps {
   conversation: any;
   isOnline: boolean;
   handleToggleDrawer: () => void;
   open: boolean;
 }
 
-export const HeaderConversation: FC<HeaderConversation> = ({
+export const HeaderConversation: FC<HeaderConversationProps> = ({
   conversation,
   isOnline,
   handleToggleDrawer,
   open,
 }) => {
+  const { handleStartCall } = useCall();
+
+  const handleCall = () => {
+    handleStartCall(conversation);
+  };
 
   return (
     <React.Fragment>
@@ -54,7 +59,7 @@ export const HeaderConversation: FC<HeaderConversation> = ({
           </IconButton>
         </Tooltip>
         <Tooltip title="Call">
-          <IconButton>
+          <IconButton onClick={handleCall}>
             <CallIcon />
           </IconButton>
         </Tooltip>

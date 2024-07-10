@@ -33,7 +33,6 @@ import moment from "moment";
 import { saveAs } from "file-saver";
 import { useAuth, useSocket } from "../../hooks";
 import { MessagesListSkeleton } from "../Skeleton";
-import { debounce } from "lodash";
 import ReplyRoundedIcon from "@mui/icons-material/ReplyRounded";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";

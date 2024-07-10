@@ -28,15 +28,18 @@ export const MessageContextProvider = ({ children }: { children: any }) => {
       const newMessage = dataNewMessage.newMessage;
 
       // Update conversations with latest message
+      let currentConversation: any;
       setConversations((prevConversations) =>
-        prevConversations.map((conversation) =>
-          conversation._id === newMessage.conversation_id
-            ? {
-                ...conversation,
-                latestMessage: newMessage,
-              }
-            : conversation
-        )
+        prevConversations.map((conversation) => {
+          currentConversation =
+            conversation._id === newMessage.conversation_id
+              ? {
+                  ...conversation,
+                  latestMessage: newMessage,
+                }
+              : conversation;
+          return currentConversation;
+        })
       );
 
       // Update messages if user is in the conversation
@@ -49,7 +52,9 @@ export const MessageContextProvider = ({ children }: { children: any }) => {
       setNewMessage(newMessage);
 
       // Toggle title with new message
-      toggleTitle(`${newMessage.conversation_title} sent a new message`);
+      console.log("newMessage", newMessage);
+
+      toggleTitle(`${currentConversation?.title} sent a new message`);
     },
     [id]
   );
@@ -85,10 +90,10 @@ export const MessageContextProvider = ({ children }: { children: any }) => {
 
   useEffect(() => {
     if (!socket) return;
-    socket.on("new-message", handleMessageReceived);
+    socket.on(SOCKET_EVENT.NEW_MESSAGE, handleMessageReceived);
     socket.on(SOCKET_EVENT.DELETED_MESSAGE, handleDeletedMessageReceived);
     return () => {
-      socket.off("new-message", handleMessageReceived);
+      socket.off(SOCKET_EVENT.NEW_MESSAGE, handleMessageReceived);
       socket.off(SOCKET_EVENT.DELETED_MESSAGE, handleDeletedMessageReceived);
     };
   }, [socket, handleMessageReceived]);

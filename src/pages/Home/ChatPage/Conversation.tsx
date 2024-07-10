@@ -141,6 +141,18 @@ export const Conversation: FC<ChatContainerProps> = ({
     });
   };
 
+  useEffect(() => {
+    const handleReceiveReact = (data: any) => {
+      console.log("data.message", data.message);
+    };
+
+    socket?.on(SOCKET_EVENT.REACT_MESSAGE, handleReceiveReact);
+
+    return () => {
+      socket?.off(SOCKET_EVENT.REACT_MESSAGE, handleReceiveReact);
+    };
+  }, [socket]);
+
   const handleClosePreviewImageDialog = () => {
     setOpenPreviewImage(false);
   };

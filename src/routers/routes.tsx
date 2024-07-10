@@ -10,13 +10,17 @@ import {
   VerifyAccountPage,
   verifyAccountLoader,
   ChatPage,
-  CallPage,
+  CallVideoPage,
 } from "../pages";
 import { RegisterSuccess } from "../components";
 import { AuthGuard, GuestGuard, RoleBasedGuard } from "../guards";
 import { ROLES } from "../constants";
 import { HomeLayout } from "../layouts";
-import { MessageContextProvider, SocketContextProvider } from "../providers";
+import {
+  CallContextProvider,
+  MessageContextProvider,
+  SocketContextProvider,
+} from "../providers";
 
 export const routes: RouteObject[] = [
   /** Unauthenticated Route */
@@ -78,11 +82,11 @@ export const routes: RouteObject[] = [
       <AuthGuard>
         <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
           <SocketContextProvider>
-            <MessageContextProvider>
-              <HomeLayout>
+            <CallContextProvider>
+              <MessageContextProvider>
                 <Outlet />
-              </HomeLayout>
-            </MessageContextProvider>
+              </MessageContextProvider>
+            </CallContextProvider>
           </SocketContextProvider>
         </RoleBasedGuard>
       </AuthGuard>
@@ -90,24 +94,34 @@ export const routes: RouteObject[] = [
     errorElement: <NotFoundPage />,
     children: [
       {
-        path: "/home",
-        element: <App />,
+        element: (
+          <HomeLayout>
+            <Outlet />
+          </HomeLayout>
+        ),
+        children: [
+          {
+            path: "/home",
+            element: <App />,
+          },
+          {
+            path: "/",
+            element: <ChatPage />,
+          },
+          {
+            path: "/chat/:id",
+            element: <ChatPage />,
+          },
+
+          {
+            path: "/about",
+            element: <App />,
+          },
+        ],
       },
       {
-        path: "/",
-        element: <ChatPage />,
-      },
-      {
-        path: "/chat/:id",
-        element: <ChatPage />,
-      },
-      {
-        path: "/video-call",
-        element: <CallPage />,
-      },
-      {
-        path: "/about",
-        element: <App />,
+        path: "/call/:conversation_id/:initialize_call",
+        element: <CallVideoPage />,
       },
     ],
   },

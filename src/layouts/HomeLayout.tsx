@@ -1,6 +1,6 @@
 import Sidebar from "../components/HomeForm/Sidebar";
 import Header from "../components/HomeForm/Header";
-import { Drawer, Grid } from "@mui/material";
+import { Grid } from "@mui/material";
 import { useDrawerState } from "../hooks";
 
 interface HomeLayoutProps {
