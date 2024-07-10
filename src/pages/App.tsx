@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import logo from "../assets/logo.svg";
 import "../css/App.css";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { signout, useAuth } from "../hooks";
 import {
-  AppBar,
   Avatar,
   Box,
   Button,
   Container,
+  Divider,
   FormControl,
   Grid,
   IconButton,
@@ -21,22 +21,82 @@ import {
   TextField,
   Toolbar,
   Typography,
+  styled,
 } from "@mui/material";
 import { logout, token } from "../services";
 import MenuIcon from "@mui/icons-material/Menu";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FolderIcon from "@mui/icons-material/Folder";
 import SendIcon from "@mui/icons-material/Send";
+import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
+import MuiDrawer from "@mui/material/Drawer";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import { mainListItems, secondaryListItems } from "./Admin/Dashboard/listItems";
 
-export function App() {
+interface AppBarProps extends MuiAppBarProps {
+  open?: boolean;
+}
+const drawerWidth: number = 240;
+
+const AppBar = styled(MuiAppBar, {
+  shouldForwardProp: (prop) => prop !== "open",
+})<AppBarProps>(({ theme, open }) => ({
+  zIndex: theme.zIndex.drawer + 1,
+  transition: theme.transitions.create(["width", "margin"], {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  ...(open && {
+    marginLeft: drawerWidth,
+    width: `calc(100% - ${drawerWidth}px)`,
+    transition: theme.transitions.create(["width", "margin"], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  }),
+}));
+
+const Drawer = styled(MuiDrawer, {
+  shouldForwardProp: (prop) => prop !== "open",
+})(({ theme, open }) => ({
+  "& .MuiDrawer-paper": {
+    position: "relative",
+    whiteSpace: "nowrap",
+    width: drawerWidth,
+    transition: theme.transitions.create("width", {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    boxSizing: "border-box",
+    ...(!open && {
+      overflowX: "hidden",
+      transition: theme.transitions.create("width", {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen,
+      }),
+      width: theme.spacing(7),
+      [theme.breakpoints.up("sm")]: {
+        width: theme.spacing(9),
+      },
+    }),
+  },
+}));
+
+export function App({ children }: { children: any }) {
   const navigate = useNavigate();
   const { user, dispatch } = useAuth();
   const location = useLocation();
+  const [open, setOpen] = React.useState(true);
+  const [loading, setLoading] = useState(false);
+  const toggleDrawer = () => {
+    setOpen(!open);
+  };
   useEffect(() => {
     console.log("user", user);
   }, []);
 
   const handleLogout = () => {
+    setLoading(true);
     logout()
       .then(() => {
         dispatch(signout());
@@ -45,49 +105,11 @@ export function App() {
       .catch((reason: any) => {
         console.log("Logout Fail", reason);
         return;
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
-
-  /** Example here */
-  // const [isConnected, setIsConnected] = useState(socket.connected);
-  // const [messages, setMessages] = useState<string[]>([]);
-  // const [msg, setMsg] = useState("");
-  // const lastMessageRef = useRef<HTMLElement>(null);
-
-  // function sendMsg() {
-  //   socket.emit("message", { message: msg });
-  //   setMsg("");
-  // }
-
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
-  //   }, 100);
-  // }, [messages]);
-
-  // useEffect(() => {
-  //   function onConnect() {
-  //     console.log("Connected");
-  //     setIsConnected(true);
-  //   }
-  //   function onDisconnect() {
-  //     console.log("Disonnected");
-  //     setIsConnected(false);
-  //   }
-  //   function onMessageEvent(value: string) {
-  //     setMessages((previous) => [...previous, value]);
-  //   }
-
-  //   socket.on("connect", onConnect);
-  //   socket.on("disconnect", onDisconnect);
-  //   socket.on("message", onMessageEvent);
-
-  //   return () => {
-  //     socket.off("connect", onConnect);
-  //     socket.off("disconnect", onDisconnect);
-  //     socket.off("message", onMessageEvent);
-  //   };
-  // }, []);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
@@ -102,126 +124,60 @@ export function App() {
           >
             <MenuIcon />
           </IconButton>
-          <img
-            src={logo}
-            className="App-logo"
-            alt="logo"
-            style={{ width: "50px", height: "40px" }}
-            onClick={() =>
-              navigate("/", {
-                replace: true,
-              })
-            }
-          />
-          <NavLink to={"/home"} replace>
-            HOME
-          </NavLink>
-          <NavLink to={"/about"} replace>
-            ABOUT
-          </NavLink>
+          <Link to={"/"}>
+            <img
+              src={logo}
+              className="App-logo"
+              alt="logo"
+              style={{ width: "50px", height: "40px" }}
+              onClick={() =>
+                navigate("/", {
+                  replace: true,
+                })
+              }
+            />
+          </Link>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Hello {user?.fullName} ! You're {location.pathname} of Chat App
+            Hello {user?.fullName}
           </Typography>
           <Button variant="contained" onClick={handleLogout}>
             Log out
           </Button>
-          <Button variant="contained" onClick={token}>
+          {/* <Button variant="contained" onClick={token}>
             Refresh Token
-          </Button>
+          </Button> */}
         </Toolbar>
       </AppBar>
 
-      {/* <Box sx={{ flexGrow: 1, display: "flex" }}>
-        <Grid container sx={{ flexGrow: 1 }}>
-          <Grid item xs={4} sx={{ backgroundColor: "#1A2027" }}>
-            <Container>
-              <List dense={false}>
-                <ListItem
-                  sx={{ backgroundColor: "#fff" }}
-                  secondaryAction={
-                    <IconButton edge="end" aria-label="delete">
-                      <DeleteIcon />
-                    </IconButton>
-                  }
-                >
-                  <ListItemAvatar>
-                    <Avatar>
-                      <FolderIcon />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      isConnected ? user?.fullName + " is connected" : ""
-                    }
-                    secondary={"Secondary text"}
-                  />
-                </ListItem>
-              </List>
-              <Button onClick={() => socket.connect()}>Connect</Button>
-              <Button onClick={() => socket.disconnect()}>Disconnect</Button>
-            </Container>
-          </Grid>
-
-          <Grid
-            item
-            xs={8}
+      <Box sx={{ flexGrow: 1, display: "flex" }}>
+        <Drawer variant="permanent" open={open}>
+          <Toolbar
             sx={{
-              backgroundColor: "#def",
               display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              px: [1],
             }}
           >
-            <Container
-              sx={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                overflow: "auto",
-                maxHeight: "85vh",
-              }}
-            >
-              <List dense={true}>
-                {messages.map((message, index) => (
-                  <ListItem key={index}>
-                    <ListItemText ref={lastMessageRef}>{message}</ListItemText>
-                  </ListItem>
-                ))}
-              </List>
-            </Container>
-            <Container>
-              <FormControl fullWidth sx={{ margin: "15px" }}>
-                <Paper
-                  component="form"
-                  sx={{
-                    p: "2px 4px",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    return sendMsg();
-                  }}
-                >
-                  <InputBase
-                    sx={{ ml: 1, flex: 1 }}
-                    placeholder="Aa"
-                    value={msg}
-                    onChange={(e) => setMsg(e.target.value)}
-                  />
-                  <IconButton
-                    type="submit"
-                    sx={{ p: "10px" }}
-                    aria-label="send"
-                  >
-                    <SendIcon />
-                  </IconButton>
-                </Paper>
-              </FormControl>
-            </Container>
-          </Grid>
-        </Grid>
-      </Box> */}
+            <IconButton onClick={toggleDrawer}>
+              <ChevronLeftIcon />
+            </IconButton>
+          </Toolbar>
+          <Divider />
+          <List component="nav">
+            {mainListItems}
+            <Divider sx={{ my: 1 }} />
+            {secondaryListItems}
+          </List>
+        </Drawer>
+        <Container
+          sx={{
+            height: "10px",
+          }}
+        >
+          {children}
+        </Container>
+      </Box>
     </Box>
   );
 }

@@ -11,9 +11,24 @@ import {
 } from "@mui/icons-material";
 import { List, ListItem } from "@mui/material";
 import { NavLink, useLocation } from "react-router-dom";
+import { logout } from "../../services";
+import { signout, useAuth } from "../../hooks";
 
 function Sidebar() {
   const location = useLocation();
+  const { dispatch } = useAuth();
+
+  const handleLogout = () => {
+    logout()
+      .then(() => {
+        dispatch(signout());
+        return;
+      })
+      .catch((reason: any) => {
+        console.log("Logout Fail", reason);
+        return;
+      });
+  };
 
   const menu = [
     { icon: <ChatOutlined />, title: "Chats", path: "/" },
@@ -37,32 +52,41 @@ function Sidebar() {
         margin: "0",
       }}
     >
-      {menu.map((item) => (
-        <NavLink
-          key={item.title}
-          to={item.path}
-          style={{
-            textDecoration: "none",
-          }}
-        >
-          <ListItem
-            component={"div"}
+      {menu.map((item) => {
+        return (
+          <NavLink
+            key={item.title}
+            to={item.path}
+            onClick={() => {
+              if (item.path == "/logout") {
+                handleLogout();
+              }
+            }}
             style={{
-              justifyContent: "center",
-              backgroundColor: location.pathname === item.path ? "#ebe9e4" : "",
-              color: location.pathname === item.path ? "#ed8207" : "white",
-              margin: "auto",
-              borderRadius: "15px",
-              width: "50%",
-              height: "60px",
+              textDecoration: "none",
             }}
             disableGutters
             title={item.title}
           >
-            {item.icon}
-          </ListItem>
-        </NavLink>
-      ))}
+            <ListItem
+              component={"div"}
+              style={{
+                justifyContent: "center",
+                backgroundColor:
+                  location.pathname === item.path ? "#ebe9e4" : "",
+                color: location.pathname === item.path ? "#ed8207" : "white",
+                margin: "auto",
+                borderRadius: "15px",
+                width: "50%",
+                height: "60px",
+              }}
+              disableGutters
+            >
+              {item.icon}
+            </ListItem>
+          </NavLink>
+        );
+      })}
     </List>
   );
 }
