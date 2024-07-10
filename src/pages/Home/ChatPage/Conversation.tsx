@@ -2,7 +2,9 @@ import { Container, Grid, IconButton, ListItemText } from "@mui/material";
 import { useLocation, useParams } from "react-router-dom";
 import { FC, useEffect, useRef, useState } from "react";
 import {
+  addFriendRequest,
   getConversationByID,
+  getFriendById,
   getMessagesConversation,
   sendMessage,
 } from "../../../services";
@@ -14,15 +16,21 @@ import {
   MessagesList,
 } from "../../../components";
 import {
+  useAppDispatch,
   useAuth,
   useDrawerState,
   useMessage,
   useSocket,
   useUploadFile,
 } from "../../../hooks";
-import { MESSAGE_TYPE, SOCKET_EVENT } from "../../../constants";
+import {
+  GROUP_CONVERSATION,
+  MESSAGE_TYPE,
+  SOCKET_EVENT,
+} from "../../../constants";
 import ClearIcon from "@mui/icons-material/Clear";
 import { ChatContainerProps } from "../../../providers";
+import { showNotificationAction } from "../../../stores/notificationActionSlice";
 
 export const Conversation: FC<ChatContainerProps> = ({
   conversations,
@@ -38,6 +46,7 @@ export const Conversation: FC<ChatContainerProps> = ({
   const { handleUploadFile, progressUpload } = useUploadFile();
   const { open, handleToggleDrawer } = useDrawerState();
   const location = useLocation();
+  const dispatchNoti = useAppDispatch();
 
   const [conversation, setConversation] = useState(
     location.state?.conversation || null
@@ -45,6 +54,9 @@ export const Conversation: FC<ChatContainerProps> = ({
   const [isOnline, setIsOnline] = useState<boolean>(
     conversation?.online ? conversation?.online : false
   );
+  const [statusFriendReceiverId, setStatusFriendReceiverId] =
+    useState<string>("");
+  const [receiverId, setReceiverId] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [receiver, setReceiver] = useState();
   const lastMessageRef = useRef<any>(null);
@@ -92,6 +104,33 @@ export const Conversation: FC<ChatContainerProps> = ({
       }
     }
   }, [id, onlineUsers, conversation]);
+
+  useEffect(() => {
+    if (conversation && user) {
+      if (conversation.type === GROUP_CONVERSATION) {
+        return;
+      }
+      const friendId =
+        conversation.participants[0]._id === user.id
+          ? conversation.participants[1]._id
+          : conversation.participants[0]._id;
+      setReceiverId(friendId);
+      getFriendById(friendId)
+        .then((res) => {
+          if (res.success) {
+            const friend: any = res.data;
+            setStatusFriendReceiverId(friend.status || "");
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          setStatusFriendReceiverId("");
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [conversation]);
 
   const handleSendMessage = async (
     message: string,
@@ -147,6 +186,68 @@ export const Conversation: FC<ChatContainerProps> = ({
   const handleOpenPreviewImageDialog = (imageLink: string) => {
     setOpenPreviewImage(true);
     setPreviewImageLink(imageLink);
+  };
+
+  const handleAddFriend = () => {
+    if (user?.id) {
+      addFriendRequest(user.id, {
+        friendId: receiverId,
+      })
+        .then((res) => {
+          if (res.success) {
+            dispatchNoti(
+              showNotificationAction({
+                message: "Request sent successfully",
+                severity: "success",
+              })
+            );
+          }
+        })
+        .catch((err) => {
+          dispatchNoti(
+            showNotificationAction({
+              message: err?.message?.data?.message || "Something went wrong",
+              severity: "error",
+            })
+          );
+        });
+    }
+  };
+
+  const handleCall = () => {
+    if (conversation) {
+      if (
+        statusFriendReceiverId !== "accept" &&
+        conversation.type !== GROUP_CONVERSATION
+      ) {
+        dispatchNoti(
+          showNotificationAction({
+            message: "Only friends can use this feature.",
+            severity: "warning",
+          })
+        );
+      } else {
+        window.alert("Call here");
+      }
+    }
+  };
+
+  const handleVideoCall = () => {
+    if (conversation) {
+      if (
+        statusFriendReceiverId !== "accept" &&
+        conversation.type !== GROUP_CONVERSATION
+      ) {
+        dispatchNoti(
+          showNotificationAction({
+            message: "Only friends can use this feature.",
+            severity: "warning",
+          })
+        );
+      } else {
+        window.alert("Video Call here");
+      }
+    }
   };
 
   /** Infinite Scroll */
@@ -224,7 +325,11 @@ export const Conversation: FC<ChatContainerProps> = ({
           <HeaderConversation
             conversation={conversation}
             isOnline={isOnline}
+            statusFriendReceiverId={statusFriendReceiverId}
             open={open}
+            handleAddFriend={handleAddFriend}
+            handleCall={handleCall}
+            handleVideoCall={handleVideoCall}
             handleToggleDrawer={handleToggleDrawer}
           />
         </Grid>
