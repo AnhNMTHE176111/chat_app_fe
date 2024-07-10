@@ -27,6 +27,13 @@ export const URI = {
   // Conversation
   GET_ALL_CONVERSATIONS: "/conversation/list",
   GET_MESSAGE_CONVERSATION: "/conversation/:conversation_id/messages",
+
+  // Admin
+  GET_ALL_EMOJIS: "/emojis",
+  CREATE_EMOJI: "/add/emojis",
+  GET_EMOJIS_BY_ID: "/emojis/:id",
+  UPDATE_EMOJI: "/emojis/:id",
+  DELETE_EMOJI: "/emojis/:id",
 };
 
 export const NON_AUTHORIZATION_API = [URI.FORGOT_PASSWORD, URI.LOGIN];

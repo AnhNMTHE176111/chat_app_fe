@@ -6,6 +6,9 @@ import {
   DialogActions,
   Typography,
 } from "@mui/material";
+import { Emojis, createEmojis } from "../../../services";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { showNotificationAction } from "../../../stores/notificationActionSlice";
 
 interface AddEmojiProps {
   onClose: () => void;
@@ -17,11 +20,31 @@ export const AddEmoji: React.FC<AddEmojiProps> = ({ onClose }) => {
   const [description, setDescription] = useState("");
   const [imageURL, setImageURL] = useState("");
 
+  const notificationAction = useAppSelector(
+    (state) => state.notificationAction
+  );
+  const dispatch = useAppDispatch();
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Handle form submission logic here
-    // For example, you could create a new emoji object and add it to the list
-    const newEmoji = { id: Date.now(), name, emoji, description, imageURL };
+    const param: Emojis = { name, emoji, description, imageURL };
+    createEmojis(param)
+      .then((respone) => {
+        dispatch(
+          showNotificationAction({
+            message: "Add Emoji Successfully!",
+            severity: "success",
+          })
+        )
+      })
+      .catch((err) => {
+        dispatch(
+          showNotificationAction({
+            message: err?.response?.data?.message,
+            severity: "error",
+          })
+        )
+      })
+    const newEmoji = {  name, emoji, description, imageURL };
     console.log(newEmoji);
     onClose(); // Close dialog after form submission
   };

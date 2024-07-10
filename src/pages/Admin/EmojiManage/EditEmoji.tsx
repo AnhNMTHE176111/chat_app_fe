@@ -10,7 +10,7 @@ import {
 
 // Sample data type
 interface Emoji {
-  id: number;
+  id: string;
   emoji: string;
   name: string;
   description: string;
