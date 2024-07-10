@@ -83,39 +83,64 @@ export const routes: RouteObject[] = [
     ],
   },
 
-  // /** Authenticated Route */
-  // {
-  //   element: (
-  //     <AuthGuard>
-  //       <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
-  //         <SocketContextProvider>
-  //           <HomeLayout>
-  //             <Outlet />
-  //           </HomeLayout>
-  //         </SocketContextProvider>
-  //       </RoleBasedGuard>
-  //     </AuthGuard>
-  //   ),
-  //   errorElement: <NotFoundPage />,
-  //   children: [
-  //     {
-  //       path: "/",
-  //       element: <ChatPage />,
-  //     },
-  //     {
-  //       path: "/chat/:id",
-  //       element: <ChatPage />,
-  //     },
-  //     {
-  //       path: "/video-call",
-  //       element: <CallPage />,
-  //     },
-  //     {
-  //       path: "/logout",
-  //       element: <div>Logout...</div>,
-  //     },
-  //   ],
-  // },
+   /** Authenticated Route */
+  {
+    element: (
+      <AuthGuard>
+        <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
+          <SocketContextProvider>
+            <CallContextProvider>
+              <MessageContextProvider>
+                <Outlet />
+              </MessageContextProvider>
+            </CallContextProvider>
+          </SocketContextProvider>
+        </RoleBasedGuard>
+      </AuthGuard>
+    ),
+    errorElement: <NotFoundPage />,
+    children: [
+      {
+        element: (
+          <HomeLayout>
+            <Outlet />
+          </HomeLayout>
+        ),
+        children: [
+          {
+            path: "/home",
+            element: <App />,
+          },
+          {
+            path: "/",
+            element: <ChatPage />,
+          },
+          {
+            path: "/chat/:id",
+            element: <ChatPage />,
+          },
+
+          {
+            path: "/about",
+            element: <App />,
+          },
+          {
+            path: "/profile",
+            element: <Profile />,
+          },
+          {
+            path: "/contacts",
+            element: <ContactsPage />,
+          },
+        ],
+      },
+      {
+        path: "/call/:conversation_id/:initialize_call",
+        element: <CallVideoPage />,
+      },
+    ],
+  },
+
 
   /** Admin Route */
   {
@@ -145,25 +170,7 @@ export const routes: RouteObject[] = [
       {
         path: "manage-emoji",
         element: <EmojiManager />,
-      },
-      {
-        path: "/video-call",
-        element: <CallPage />,
-      },
-      {
-        path: "/profile",
-        element: <Profile />,
-      },
-      {
-        path: "/contacts",
-        element: <ContactsPage />,
-      },
-      {
-        path: "/about",
-        element: <App />,
-      },
+      }
     ],
   }, 
-    ],
-  },
 ];
