@@ -1,222 +1,182 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   IconButton,
-  Button,
-  TextField,
-  Toolbar,
-  Typography,
-  InputAdornment,
-  TablePagination,
   Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
+  Toolbar,
+  AppBar,
+  Container,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
 import SearchIcon from "@mui/icons-material/Search";
-import AddIcon from "@mui/icons-material/Add";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useNavigate } from "react-router-dom";
+import AddUser from "./AddUser";
+import TableSkeleton from "../Dashboard/TableSkeleton";
+import ViewDialog from "./ViewDialog";
 
 interface User {
   id: number;
   username: string;
+  fullname: string;
+  age: number;
+  dateOfBirth: Date;
+  phone: string;
   email: string;
+  address: string;
+  avatar: string;
+  description: string;
 }
 
-const sampleUsers: User[] = [
-  { id: 1, username: "john_doe", email: "john@example.com" },
-  { id: 2, username: "jane_doe", email: "jane@example.com" },
-  { id: 3, username: "alice", email: "alice@example.com" },
-  { id: 4, username: "bob", email: "bob@example.com" },
-  { id: 5, username: "charlie", email: "charlie@example.com" },
-  { id: 6, username: "david", email: "david@example.com" },
-  { id: 7, username: "edward", email: "edward@example.com" },
-  { id: 8, username: "frank", email: "frank@example.com" },
-  { id: 9, username: "george", email: "george@example.com" },
-  { id: 10, username: "harry", email: "harry@example.com" },
-  { id: 11, username: "isaac", email: "isaac@example.com" },
-  { id: 12, username: "jack", email: "jack@example.com" },
-];
-
 const UserManager: React.FC = () => {
-  const [users, setUsers] = useState<User[]>(sampleUsers);
+  const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [search, setSearch] = useState<string>("");
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openViewDialog, setOpenViewDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const handleEdit = (id: number) => {
-    navigate(`/admin/edit-user/${id}`);
+  useEffect(() => {
+    // Simulating data fetching
+    setTimeout(() => {
+      const sampleUsers: User[] = [
+        { id: 1, username: "Snow", fullname: "Jon Snow", age: 35, dateOfBirth: new Date("1989-09-23"), phone: "123-456-7890", email: "jon@example.com", address: "Winterfell", avatar: "url_to_avatar", description: "Knows nothing" },
+        { id: 2, username: "Lannister", fullname: "Cersei Lannister", age: 42, dateOfBirth: new Date("1982-12-03"), phone: "987-654-3210", email: "cersei@example.com", address: "King's Landing", avatar: "url_to_avatar", description: "Queen of the Seven Kingdoms" },
+        { id: 3, username: "Lannister", fullname: "Jaime Lannister", age: 45, dateOfBirth: new Date("1979-06-06"), phone: "555-123-4567", email: "jaime@example.com", address: "Casterly Rock", avatar: "url_to_avatar", description: "The Kingslayer" },
+        { id: 4, username: "Stark", fullname: "Arya Stark", age: 16, dateOfBirth: new Date("2008-07-21"), phone: "222-333-4444", email: "arya@example.com", address: "Winterfell", avatar: "url_to_avatar", description: "No one" },
+        { id: 5, username: "Targaryen", fullname: "Daenerys Targaryen", age: 12, dateOfBirth: new Date("2012-04-15"), phone: "999-888-7777", email: "daenerys@example.com", address: "Dragonstone", avatar: "url_to_avatar", description: "Mother of Dragons" },
+        { id: 6, username: "Melisandre", fullname: "Melisandre", age: 150, dateOfBirth: new Date("1874-03-25"), phone: "111-222-3333", email: "melisandre@example.com", address: "Asshai", avatar: "url_to_avatar", description: "The Red Woman" },
+        { id: 7, username: "Misandre", fullname: "Misandre", age: 150, dateOfBirth: new Date("1874-03-25"), phone: "111-222-3333", email: "misandre@example.com", address: "Asshai", avatar: "url_to_avatar", description: "The Red Woman" },
+        { id: 8, username: "Ferrara", fullname: "Clifford Ferrara", age: 44, dateOfBirth: new Date("1980-11-12"), phone: "777-777-7777", email: "clifford@example.com", address: "Braavos", avatar: "url_to_avatar", description: "The Braavosi" },
+        { id: 9, username: "Rossini", fullname: "Frances Rossini", age: 36, dateOfBirth: new Date("1988-02-29"), phone: "444-555-6666", email: "frances@example.com", address: "Lys", avatar: "url_to_avatar", description: "The Lysean" },
+        { id: 10, username: "Harvey", fullname: "Roxie Harvey", age: 65, dateOfBirth: new Date("1959-08-18"), phone: "000-111-2222", email: "roxie@example.com", address: "Pentos", avatar: "url_to_avatar", description: "The Pentoshi" },
+      ];
+
+      setUsers(sampleUsers);
+      setIsLoading(false);
+    }, 2000);
+  }, []);
+
+  useEffect(() => {
+    // Filter users based on search input
+    const filtered = users.filter((user) =>
+      user.username.toLowerCase().includes(search.toLowerCase())
+    );
+    setFilteredUsers(filtered);
+  }, [search, users]);
+
+  const handleAddUserClick = () => {
+    setOpenDialog(true);
   };
 
-  const handleDelete = (id: number) => {
-    setSelectedUserId(id);
-    setConfirmDeleteOpen(true);
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
   };
 
-  const handleConfirmDelete = () => {
-    if (selectedUserId !== null) {
-      const updatedUsers = users.filter((user) => user.id !== selectedUserId);
-      setUsers(updatedUsers);
-      setSelectedUserId(null);
-      setConfirmDeleteOpen(false);
+  const handleView = (id: number) => {
+    const user = users.find((user) => user.id === id);
+    if (user) {
+      setSelectedUser(user);
+      setOpenViewDialog(true);
     }
   };
 
-  const handleCancelDelete = () => {
-    setSelectedUserId(null);
-    setConfirmDeleteOpen(false);
-  };
+  const columns: GridColDef[] = [
+    { field: "id", headerName: "ID", width: 70 },
+    { field: "username", headerName: "Username", width: 130 },
+    { field: "fullname", headerName: "Fullname", width: 130 },
+    { field: "age", headerName: "Age", type: "number", width: 90 },
+    { field: "phone", headerName: "Phone", width: 130 },
+    { field: "email", headerName: "Email", width: 200 },
+
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 130,
+      renderCell: (params) => (
+        <>
+          <IconButton
+            aria-label="View"
+            onClick={() => handleView(params.row.id as number)}
+          >
+            <VisibilityIcon />
+          </IconButton>
+        </>
+      ),
+    },
+  ];
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
   };
 
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const filteredUsers = users.filter((user) =>
-    user.username.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const paginatedUsers = filteredUsers.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
-
-  const handleBack = () => {
-    navigate("/admin/dashboard"); // Chuyển hướng về trang /admin/dashboard
-  };
-
-  const handleAddUser = () => {
-    navigate("/admin/add-user");
-  };
-
   return (
     <Paper>
-      <Toolbar>
-        <Button
-          variant="contained"
-          color="secondary"
-          startIcon={<ArrowBackIcon />}
-          onClick={handleBack}
+      <AppBar position="static">
+        <Toolbar>
+        <div style={{ display: "flex", alignItems: "center", marginRight: "auto" }}>
+          <SearchIcon />
+          <input
+            type="text"
+            placeholder="Search by username..."
+            value={search}
+            onChange={handleSearchChange}
+            style={{
+              padding: 8,
+              borderRadius: 4,
+              border: "1px solid #ccc",
+              minWidth: 200,
+              marginLeft: 8,
+            }}
+          />
+        </div>
+        <IconButton
+          edge="end"
+          color="inherit"
+          aria-label="add"
+          onClick={handleAddUserClick}
+          style={{ marginLeft: "auto" }}
         >
-          Back
-        </Button>
-        <Typography
-          variant="h6"
-          component="div"
-          sx={{ flexGrow: 1, textAlign: "center" }}
-        >
-          User Manager
-        </Typography>
-        <Button
-          startIcon={<AddIcon />}
-          variant="contained"
-          color="primary"
-          onClick={handleAddUser}
-        >
-          Add User
-        </Button>
+          <AddCircleIcon />
+        </IconButton>
       </Toolbar>
-      <TextField
-        label="Search by username"
-        variant="outlined"
-        fullWidth
-        margin="normal"
-        value={search}
-        onChange={handleSearchChange}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon />
-            </InputAdornment>
-          ),
-        }}
-      />
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>UserName</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginatedUsers.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.username}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  <IconButton
-                    onClick={() => handleEdit(user.id)}
-                    color="primary"
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    onClick={() => handleDelete(user.id)}
-                    color="secondary"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[10, 25, 50]}
-        component="div"
-        count={filteredUsers.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
+    </AppBar>
 
-      <Dialog
-        open={confirmDeleteOpen}
-        onClose={handleCancelDelete}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">Confirm Delete</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Are you sure you want to delete this User?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCancelDelete} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleConfirmDelete} color="primary" autoFocus>
-            OK
-          </Button>
-        </DialogActions>
+
+
+      <Container style={{ marginTop: 20, marginBottom: 20 }}>
+
+
+        {isLoading ? (
+          <TableSkeleton loading={isLoading} />
+        ) : (
+          <DataGrid
+            rows={filteredUsers}
+            columns={columns}
+            style={{ minHeight: 300, width: "100%" }}
+            initialState={{
+              pagination: {
+                paginationModel: { page: 0, pageSize: 9 },
+              },
+            }}
+            pageSizeOptions={[9, 18, 27]}
+            checkboxSelection
+          />
+        )}
+      </Container>
+
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <AddUser onClose={handleCloseDialog} />
+      </Dialog>
+      <Dialog open={openViewDialog} onClose={() => setOpenViewDialog(false)}>
+        {selectedUser && (
+          <ViewDialog
+            open={openViewDialog}
+            onClose={() => setOpenViewDialog(false)}
+            userData={selectedUser}
+          />
+        )}
       </Dialog>
     </Paper>
   );

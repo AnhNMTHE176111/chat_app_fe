@@ -9,23 +9,20 @@ import {
   SendActivationPage,
   VerifyAccountPage,
   verifyAccountLoader,
-  ChatPage,
-  CallPage,
+  // ChatPage,
+  // CallPage,
 } from "../pages";
 import { RegisterSuccess } from "../components";
 import { AuthGuard, GuestGuard, RoleBasedGuard } from "../guards";
 import { ROLES } from "../constants";
 import { HomeLayout } from "../layouts";
-import { SocketContextProvider } from "../providers";
+// import { SocketContextProvider } from "../providers";
 
 import Dashboard from "../pages/Admin/Dashboard/Dashboard";
 import EmojiManager from "../pages/Admin/EmojiManage/EmojiManage";
 import UserManager from "../pages/Admin/UserManage/UserManage";
-import AddUser from "../pages/Admin/UserManage/AddUser";
 import AddEmojiPage from "../pages/Admin/EmojiManage/AddEmoji";
 import AddEmoji from "../pages/Admin/EmojiManage/AddEmoji";
-import EditEmoji from "../pages/Admin/EmojiManage/EditEmoji";
-import EditUser from "../pages/Admin/UserManage/EditUser";
 import { logout } from "../services";
 // import UserManager from "../pages/Admin/UserManage";
 export const routes: RouteObject[] = [
@@ -82,39 +79,39 @@ export const routes: RouteObject[] = [
     ],
   },
 
-  /** Authenticated Route */
-  {
-    element: (
-      <AuthGuard>
-        <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
-          <SocketContextProvider>
-            <HomeLayout>
-              <Outlet />
-            </HomeLayout>
-          </SocketContextProvider>
-        </RoleBasedGuard>
-      </AuthGuard>
-    ),
-    errorElement: <NotFoundPage />,
-    children: [
-      {
-        path: "/",
-        element: <ChatPage />,
-      },
-      {
-        path: "/chat/:id",
-        element: <ChatPage />,
-      },
-      {
-        path: "/video-call",
-        element: <CallPage />,
-      },
-      {
-        path: "/logout",
-        element: <div>Logout...</div>,
-      },
-    ],
-  },
+  // /** Authenticated Route */
+  // {
+  //   element: (
+  //     <AuthGuard>
+  //       <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
+  //         <SocketContextProvider>
+  //           <HomeLayout>
+  //             <Outlet />
+  //           </HomeLayout>
+  //         </SocketContextProvider>
+  //       </RoleBasedGuard>
+  //     </AuthGuard>
+  //   ),
+  //   errorElement: <NotFoundPage />,
+  //   children: [
+  //     {
+  //       path: "/",
+  //       element: <ChatPage />,
+  //     },
+  //     {
+  //       path: "/chat/:id",
+  //       element: <ChatPage />,
+  //     },
+  //     {
+  //       path: "/video-call",
+  //       element: <CallPage />,
+  //     },
+  //     {
+  //       path: "/logout",
+  //       element: <div>Logout...</div>,
+  //     },
+  //   ],
+  // },
 
   /** Admin Route */
   {
@@ -141,22 +138,9 @@ export const routes: RouteObject[] = [
         path: "manage-emoji",
         element: <EmojiManager />,
       },
-      {
-        path: "add-user",
-        element: <AddUser />,
-      },
-      {
-        path: "edit-user/:id",
-        element: <EditUser />,
-      },
-      {
-        path: "add-emoji",
-        element: <AddEmoji />,
-      },
-      {
-        path: "edit-emoji/:id",
-        element: <EditEmoji />,
-      },
+
+      
+      
     ],
   },
 ];

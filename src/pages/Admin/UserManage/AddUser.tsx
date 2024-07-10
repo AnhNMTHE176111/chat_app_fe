@@ -1,122 +1,75 @@
-import React, { useState } from "react";
+import React from "react";
 import {
-  Button,
+  DialogContent,
   TextField,
-  Paper,
-  Toolbar,
+  Button,
+  DialogActions,
   Typography,
-  IconButton,
-  Box,
 } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
 
-interface User {
-  id?: number;
-  username: string;
-  email: string;
-  phone: string;
+interface AddUserProps {
+  onClose: () => void;
 }
 
-const AddUser: React.FC = () => {
-  const [user, setUser] = useState<User>({
-    username: "",
-    email: "",
-    phone: "",
-  });
-  const navigate = useNavigate();
-
-  const handleInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ): void => {
-    const { name, value } = event.target;
-    setUser((prevUser) => ({
-      ...prevUser,
-      [name]: value,
-    }));
-  };
-
-  const handleSave = (): void => {
-    // Code to save the user data
-    console.log("Saving user:", user);
-  };
-
-  const handleBack = (): void => {
-    navigate("/admin/manage-user");
+export const AddUser: React.FC<AddUserProps> = ({ onClose }) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    // Handle form submission logic here
+    onClose(); // Close dialog after form submission
   };
 
   return (
-    <Box
-      sx={{
-        padding: "24px",
-        borderRadius: "8px",
-        border: "1px solid #ccc",
-        marginTop: "24px",
-        marginBottom: "24px",
-        marginLeft: "24px",
-        marginRight: "24px",
-      }}
-    >
-      <Paper>
-        <Toolbar>
-          <IconButton onClick={handleBack}>
-            <ArrowBack />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Add User
-          </Typography>
-        </Toolbar>
-        <Box
-          sx={{
-            padding: "16px",
-            borderRadius: "8px",
-            border: "1px solid #ccc",
-            marginTop: "16px",
-          }}
-        >
+    <>
+      <DialogContent>
+        <Typography variant="h6">Add User</Typography>
+        <form onSubmit={handleSubmit}>
           <TextField
-            name="username"
+            autoFocus
+            margin="dense"
+            id="FullName"
+            label="FullName"
+            type="text"
+            fullWidth
+            required
+          />
+          <TextField
+            autoFocus
+            margin="dense"
+            id="Username"
             label="Username"
-            variant="outlined"
-            value={user.username}
-            onChange={handleInputChange}
-            margin="normal"
+            type="text"
             fullWidth
+            required
           />
           <TextField
-            name="email"
-            label="Email"
-            variant="outlined"
-            value={user.email}
-            onChange={handleInputChange}
-            margin="normal"
+            margin="dense"
+            id="email"
+            label="Email "
+            type="email"
             fullWidth
+            required
           />
           <TextField
-            name="phone"
-            label="Phone"
-            variant="outlined"
-            value={user.phone}
-            onChange={handleInputChange}
-            margin="normal"
+            margin="dense"
+            id="phone"
+            label="Phone "
+            type="Phone"
             fullWidth
+            required
           />
-        </Box>
-        <Toolbar>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSave}
-            sx={{ marginRight: "16px" }}
-          >
-            Save
-          </Button>
-          <Button variant="contained" color="secondary" onClick={handleBack}>
-            Back
-          </Button>
-        </Toolbar>
-      </Paper>
-    </Box>
+
+          {/* Add more fields as needed */}
+        </form>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary">
+          Cancel
+        </Button>
+        <Button type="submit" form="addUserForm" color="primary">
+          Add
+        </Button>
+      </DialogActions>
+    </>
   );
 };
 

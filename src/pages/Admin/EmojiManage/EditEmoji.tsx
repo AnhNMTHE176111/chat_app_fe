@@ -1,91 +1,95 @@
-import React, { useEffect, useState } from "react";
-import { Box, TextField, Button, Grid, Typography } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
-import AdminLayout from "../../../layouts/AdminLayout";
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+} from "@mui/material";
 
+// Sample data type
 interface Emoji {
-  id: string;
+  id: number;
   emoji: string;
+  name: string;
   description: string;
+  imageURL: string;
 }
 
-const EditEmoji: React.FC = () => {
-  const { id } = useParams<{ id: string }>(); // Lấy id từ URL
-  const [emoji, setEmoji] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const navigate = useNavigate();
+interface Props {
+  emoji: Emoji;
+  open: boolean;
+  onClose: () => void;
+  onSave: (emoji: Emoji) => void;
+}
 
-  useEffect(() => {
-    const fetchEmoji = async (id: string) => {
-      // Thay thế bằng mã gọi API thực tế của bạn để lấy emoji từ id
-      const fetchedEmoji: Emoji = await new Promise((resolve) =>
-        setTimeout(
-          () => resolve({ id, emoji: "😀", description: "Happy face" }),
-          500
-        )
-      );
-      setEmoji(fetchedEmoji.emoji);
-      setDescription(fetchedEmoji.description);
-    };
+export const EditEmoji: React.FC<Props> = ({ emoji, open, onClose, onSave }) => {
+  const [editedEmoji, setEditedEmoji] = useState<Emoji>(emoji);
 
-    if (id) {
-      fetchEmoji(id);
-    }
-  }, [id]);
-
-  const handleSave = () => {
-    // Code to update the emoji and description
-    console.log("Emoji ID:", id);
-    console.log("Updated Emoji:", emoji);
-    console.log("Updated Description:", description);
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setEditedEmoji((prevEmoji) => ({
+      ...prevEmoji,
+      [name]: value,
+    }));
   };
 
-  const handleBack = () => {
-    navigate("/admin/manage-emoji");
+  const handleSave = () => {
+    onSave(editedEmoji);
+    onClose();
   };
 
   return (
-    <AdminLayout>
-      <Typography variant="h5" component="div" gutterBottom>
-        Edit Emoji
-      </Typography>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Emoji"
-            variant="outlined"
-            value={emoji}
-            onChange={(e) => setEmoji(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Description"
-            variant="outlined"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "8px",
-            }}
-          >
-            <Button variant="contained" onClick={handleSave}>
-              Save
-            </Button>
-            <Button variant="outlined" onClick={handleBack}>
-              Back
-            </Button>
-          </Box>
-        </Grid>
-      </Grid>
-    </AdminLayout>
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>Edit Emoji</DialogTitle>
+      <DialogContent>
+      <TextField
+          fullWidth
+          label="Emoji"
+          name="emoji"
+          value={editedEmoji.emoji}
+          onChange={handleChange}
+          variant="outlined"
+          margin="normal"
+        />
+        <TextField
+          fullWidth
+          label="Name"
+          name="name"
+          value={editedEmoji.name}
+          onChange={handleChange}
+          variant="outlined"
+          margin="normal"
+        />
+        <TextField
+          fullWidth
+          label="Description"
+          name="description"
+          value={editedEmoji.description}
+          onChange={handleChange}
+          variant="outlined"
+          margin="normal"
+        />
+        <TextField
+          fullWidth
+          label="Image URL"
+          name="imageURL"
+          value={editedEmoji.imageURL}
+          onChange={handleChange}
+          variant="outlined"
+          margin="normal"
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary">
+          Cancel
+        </Button>
+        <Button onClick={handleSave} color="primary">
+          Save
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

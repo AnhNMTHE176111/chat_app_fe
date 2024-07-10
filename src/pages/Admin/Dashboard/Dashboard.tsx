@@ -13,13 +13,10 @@ import Badge from "@mui/material/Badge";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
-import Link from "@mui/material/Link";
-import MenuIcon from "@mui/icons-material/Menu";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import { mainListItems, secondaryListItems } from "./listItems";
 import Chart from "./Chart";
 import Deposits from "./Deposits";
+import TotalGroup from "./TotalGroup";
+import TotalMessages from "./TotalMessages ";
 
 const drawerWidth: number = 240;
 
@@ -82,28 +79,9 @@ export default function Dashboard() {
 
   return (
     <ThemeProvider theme={defaultTheme}>
-      <Box sx={{ display: "flex", width: "100%" }}>
+      <Box sx={{ display: "flex", width: "100%", height: "100vh", overflow: "hidden", position: "relative" }}>
         <CssBaseline />
-        {/* <Drawer variant="permanent" open={open}>
-          <Toolbar
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              px: [1],
-            }}
-          >
-            <IconButton onClick={toggleDrawer}>
-              <ChevronLeftIcon />
-            </IconButton>
-          </Toolbar>
-          <Divider />
-          <List component="nav">
-            {mainListItems}
-            <Divider sx={{ my: 1 }} />
-            {secondaryListItems}
-          </List>
-        </Drawer> */}
+
         <Box
           component="main"
           sx={{
@@ -112,40 +90,73 @@ export default function Dashboard() {
                 ? theme.palette.grey[100]
                 : theme.palette.grey[900],
             flexGrow: 1,
-            height: "100vh",
-            overflow: "auto",
+            height: "100%", // Set height to 100% to fill viewport
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden", // Remove scroll bar
           }}
         >
-          <Toolbar />
-          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Grid container spacing={3}>
-              {/* Chart */}
-              <Grid item xs={12} md={8} lg={9}>
+          <Container maxWidth="lg" sx={{ mt: 0, mb: 0, flexGrow: 1, overflow: "hidden" }}>
+            <Grid container spacing={3} sx={{ height: "100%" }}>
+              <Grid item xs={12} md={4} lg={4}>
                 <Paper
                   sx={{
                     p: 2,
                     display: "flex",
                     flexDirection: "column",
-                    height: 240,
-                  }}
-                >
-                  <Chart />
-                </Paper>
-              </Grid>
-              {/* Recent Deposits */}
-              <Grid item xs={12} md={4} lg={3}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: "flex",
-                    flexDirection: "column",
-                    height: 240,
+                    height: "100%", // Set height to 100% to fill parent
+                    minHeight: "200px", // Adjust as needed
+                    overflow: "hidden", // Remove scroll bar
                   }}
                 >
                   <Deposits />
                 </Paper>
               </Grid>
-              <Grid item xs={12}></Grid>
+
+              <Grid item xs={12} md={4} lg={4}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%", // Set height to 100% to fill parent
+                    minHeight: "200px", // Adjust as needed
+                    overflow: "hidden", // Remove scroll bar
+                  }}
+                >
+                  <TotalGroup />
+                </Paper>
+              </Grid>
+
+              <Grid item xs={12} md={4} lg={4}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%", // Set height to 100% to fill parent
+                    minHeight: "200px", // Adjust as needed
+                    overflow: "hidden", // Remove scroll bar
+                  }}
+                >
+                  <TotalMessages />
+                </Paper>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "calc(100% - 100px)", // Adjust height to leave no extra whitespace
+                    minHeight: "200px",
+                    overflow: "hidden", // Remove scroll bar
+                  }}
+                >
+                  <Chart />
+                </Paper>
+              </Grid>
             </Grid>
           </Container>
         </Box>

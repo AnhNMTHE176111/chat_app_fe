@@ -1,65 +1,89 @@
 import React, { useState } from "react";
-import { Box, TextField, Button, Grid, Typography } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import AdminLayout from "../../../layouts/AdminLayout";
+import {
+  DialogContent,
+  TextField,
+  Button,
+  DialogActions,
+  Typography,
+} from "@mui/material";
 
-const AddEmoji: React.FC = () => {
-  const [emoji, setEmoji] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const navigate = useNavigate();
+interface AddEmojiProps {
+  onClose: () => void;
+}
 
-  const handleSave = () => {
-    // Code to save the emoji and description
-    console.log("Emoji:", emoji);
-    console.log("Description:", description);
-  };
+export const AddEmoji: React.FC<AddEmojiProps> = ({ onClose }) => {
+  const [name, setName] = useState("");
+  const [emoji, setEmoji] = useState("");
+  const [description, setDescription] = useState("");
+  const [imageURL, setImageURL] = useState("");
 
-  const handleBack = () => {
-    navigate("/admin/manage-emoji");
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    // Handle form submission logic here
+    // For example, you could create a new emoji object and add it to the list
+    const newEmoji = { id: Date.now(), name, emoji, description, imageURL };
+    console.log(newEmoji);
+    onClose(); // Close dialog after form submission
   };
 
   return (
-    <AdminLayout>
-      <Typography variant="h5" component="div" gutterBottom>
-        Add Emoji
-      </Typography>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
+    <>
+      <DialogContent>
+        <Typography variant="h6">Add Emoji</Typography>
+        <form id="addEmojiForm" onSubmit={handleSubmit}>
+          
           <TextField
-            fullWidth
+            margin="dense"
+            id="emoji"
             label="Emoji"
-            variant="outlined"
+            type="text"
+            fullWidth
+            required
             value={emoji}
             onChange={(e) => setEmoji(e.target.value)}
           />
-        </Grid>
-        <Grid item xs={12}>
           <TextField
+            autoFocus
+            margin="dense"
+            id="name"
+            label="Name"
+            type="text"
             fullWidth
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <TextField
+            margin="dense"
+            id="description"
             label="Description"
-            variant="outlined"
+            type="text"
+            fullWidth
+            required
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
-        </Grid>
-        <Grid item xs={12}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "8px",
-            }}
-          >
-            <Button variant="contained" onClick={handleSave}>
-              Save
-            </Button>
-            <Button variant="outlined" onClick={handleBack}>
-              Back
-            </Button>
-          </Box>
-        </Grid>
-      </Grid>
-    </AdminLayout>
+          <TextField
+            margin="dense"
+            id="imageURL"
+            label="Image URL"
+            type="text"
+            fullWidth
+            required
+            value={imageURL}
+            onChange={(e) => setImageURL(e.target.value)}
+          />
+        </form>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary">
+          Cancel
+        </Button>
+        <Button type="submit" form="addEmojiForm" color="primary">
+          Add
+        </Button>
+      </DialogActions>
+    </>
   );
 };
 
