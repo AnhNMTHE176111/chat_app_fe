@@ -4,6 +4,7 @@ import {
   Folder,
   Logout,
   PeopleAlt,
+  Person,
   Settings,
   StarBorder,
   VideoCall,
@@ -35,7 +36,7 @@ function Sidebar() {
     { icon: <PeopleAlt />, title: "Contacts", path: "/contacts" },
     { icon: <Folder />, title: "Files", path: "/folders" },
     { icon: <CalendarMonth />, title: "Calendar", path: "/calender" },
-    { icon: <StarBorder />, title: "Starred", path: "/note" },
+    { icon: <Person />, title: "Profile", path: "/profile" },
     { icon: <Settings />, title: "Settings", path: "/setting" },
     { icon: <Logout />, title: "Logout", path: "/logout" },
   ];
@@ -64,6 +65,8 @@ function Sidebar() {
             style={{
               textDecoration: "none",
             }}
+            disableGutters
+            title={item.title}
           >
             <ListItem
               component={"div"}

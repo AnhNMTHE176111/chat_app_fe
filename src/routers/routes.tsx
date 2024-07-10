@@ -9,8 +9,9 @@ import {
   SendActivationPage,
   VerifyAccountPage,
   verifyAccountLoader,
-  // ChatPage,
-  // CallPage,
+  ChatPage,
+  CallPage,
+  Profile,
 } from "../pages";
 import { RegisterSuccess } from "../components";
 import { AuthGuard, GuestGuard, RoleBasedGuard } from "../guards";
@@ -138,6 +139,21 @@ export const routes: RouteObject[] = [
         path: "manage-emoji",
         element: <EmojiManager />,
       },
+      {
+        path: "/video-call",
+        element: <CallPage />,
+      },
+      {
+        path: "/profile",
+        element: <Profile />,
+      },
+      {
+        path: "/about",
+        element: <App />,
+      },
+    ],
+  },
+
 
       
       
