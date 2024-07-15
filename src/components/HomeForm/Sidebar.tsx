@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { FC, useState } from "react";
 import {
   CalendarMonth,
   ChatOutlined,
@@ -20,14 +20,14 @@ import {
   Button,
 } from "@mui/material";
 import { NavLink, useLocation } from "react-router-dom";
-
 import { signout, useAppDispatch, useAuth } from "../../hooks";
 import { logout } from "../../services";
+import { ROLES } from "../../constants";
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
-
-function Sidebar() {
+export const Sidebar: FC = () => {
   const location = useLocation();
-  const { dispatch } = useAuth();
+  const { dispatch, user } = useAuth();
   const dispatchNoti = useAppDispatch();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
@@ -45,42 +45,28 @@ function Sidebar() {
             message: res.message || "Logout successfully!",
           });
           dispatch(signout());
-          return;
         }
       })
       .catch((error) => {
         dispatchNoti({
           type: "error",
-          message: error?.response?.data?.message || "Something wrong",
+          message: error?.response?.data?.message || "Something went wrong",
         });
-        return;
       });
     setLogoutDialogOpen(false);
   };
 
   const handleLogoutCancel = () => {
     setLogoutDialogOpen(false);
-
-  const handleLogout = () => {
-    logout()
-      .then(() => {
-        dispatch(signout());
-        return;
-      })
-      .catch((reason: any) => {
-        console.log("Logout Fail", reason);
-        return;
-      });
   };
-
-  const menu = [
+  let menu = [
     { icon: <ChatOutlined />, title: "Chats", path: "/" },
-    { icon: <VideoCall />, title: "Video Call", path: "/video-call" },
+    // { icon: <VideoCall />, title: "Video Call", path: "/video-call" },
     { icon: <PeopleAlt />, title: "Contacts", path: "/contacts" },
-    { icon: <Folder />, title: "Files", path: "/folders" },
-    { icon: <CalendarMonth />, title: "Calendar", path: "/calendar" },
+    // { icon: <Folder />, title: "Files", path: "/folders" },
+    // { icon: <CalendarMonth />, title: "Calendar", path: "/calendar" },
     { icon: <Person />, title: "Profile", path: "/profile" },
-    { icon: <Settings />, title: "Settings", path: "/setting" },
+    // { icon: <Settings />, title: "Settings", path: "/setting" },
     {
       icon: <Logout />,
       title: "Logout",
@@ -88,6 +74,25 @@ function Sidebar() {
       action: handleLogoutClick,
     },
   ];
+
+  if (user?.role == ROLES.ADMIN_ROLE) {
+    menu = [
+      { icon: <AdminPanelSettingsIcon />, title: "Dashboard", path: "/admin/dashboard"},
+      { icon: <ChatOutlined />, title: "Chats", path: "/" },
+      // { icon: <VideoCall />, title: "Video Call", path: "/video-call" },
+      { icon: <PeopleAlt />, title: "Contacts", path: "/contacts" },
+      // { icon: <Folder />, title: "Files", path: "/folders" },
+      // { icon: <CalendarMonth />, title: "Calendar", path: "/calendar" },
+      { icon: <Person />, title: "Profile", path: "/profile" },
+      // { icon: <Settings />, title: "Settings", path: "/setting" },
+      {
+        icon: <Logout />,
+        title: "Logout",
+        path: "/logout",
+        action: handleLogoutClick,
+      },
+    ];
+  }
 
   return (
     <>
@@ -148,6 +153,6 @@ function Sidebar() {
       </Dialog>
     </>
   );
-}
+};
 
 export default Sidebar;

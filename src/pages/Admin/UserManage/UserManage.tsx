@@ -94,7 +94,7 @@ const UserManager: React.FC = () => {
       field: "actions",
       headerName: "Actions",
       width: 130,
-      renderCell: (params) => (
+      renderCell: (params: any) => (
         <>
           <IconButton
             aria-label="View"

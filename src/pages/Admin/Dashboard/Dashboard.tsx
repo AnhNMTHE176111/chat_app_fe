@@ -16,7 +16,7 @@ import Paper from "@mui/material/Paper";
 import Chart from "./Chart";
 import Deposits from "./Deposits";
 import TotalGroup from "./TotalGroup";
-import TotalMessages from "./TotalMessages ";
+import TotalMessages from "./TotalMessages";
 
 const drawerWidth: number = 240;
 

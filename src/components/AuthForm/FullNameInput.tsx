@@ -24,7 +24,7 @@ export const FullNameInput: React.FC<InputProps> = ({
         message: "FullName must longer than 3 character",
       },
       maxLength: {
-        value: 25,
+        value: 45,
         message: "FullName must shorter than 25 character",
       },
     },

@@ -33,7 +33,6 @@ import moment from "moment";
 import { saveAs } from "file-saver";
 import { useAuth, useSocket } from "../../hooks";
 import { MessagesListSkeleton } from "../Skeleton";
-import { debounce } from "lodash";
 import ReplyRoundedIcon from "@mui/icons-material/ReplyRounded";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
@@ -48,6 +47,7 @@ interface MessagesListProps {
   lastMessageRef: any;
   setThreadMessage: React.Dispatch<any>;
   receiver: any;
+  conversation: any;
 }
 
 interface MessageOptionsProps {
@@ -102,6 +102,7 @@ const MessageOptions: FC<MessageOptionsProps> = ({
 };
 
 export const MessagesList: FC<MessagesListProps> = ({
+  conversation,
   messages,
   setMessages,
   isLoading,
@@ -201,6 +202,7 @@ export const MessagesList: FC<MessagesListProps> = ({
     socket?.emit(SOCKET_EVENT.REACT_MESSAGE, {
       messageId: currentMessageId,
       emoji: emojiIcon,
+      conversation: conversation,
     });
     handleCloseReaction();
     setHighlightedMessageId(null);
@@ -242,6 +244,7 @@ export const MessagesList: FC<MessagesListProps> = ({
         isMyMessage: deleteIsMyMessage,
         hiddenFor: user?.id,
         receiver: receiver,
+        conversation: conversation
       });
       const updatedMessages = messages.filter(
         (item: any) => item._id != currentDeleteMessage._id
@@ -314,6 +317,7 @@ export const MessagesList: FC<MessagesListProps> = ({
       ) : (
         <List dense={true}>
           {messages.map((message: any, index: any) => {
+            let isHidden = message.hiddenFor.includes(user?.id);
             let breakTime = false;
             if (index > 0) {
               breakTime =
@@ -348,14 +352,17 @@ export const MessagesList: FC<MessagesListProps> = ({
                   <Typography
                     textAlign={"center"}
                     fontSize={12}
-                    sx={{ margin: "20px 0" }}
+                    sx={{
+                      display: isHidden ? "none" : "",
+                      margin: "20px 0",
+                    }}
                   >
                     {fullTime}
                   </Typography>
                 )}
                 <ListItem
                   sx={{
-                    display: "flex",
+                    display: isHidden ? "none" : "flex",
                     justifyContent: isMyMessage ? "flex-end" : "flex-start",
                     marginBottom: numOfEmoji !== 0 ? "10px" : "",
                   }}

@@ -19,4 +19,8 @@ export const MESSAGE_TYPE = {
   IMAGE: "image",
   FILE: "file",
 };
+export const CALL_TYPE = {
+  VIDEO: "video",
+  VOICE: "voice",
+}
 export const DOCUMENT_TITLE = "Chat App";

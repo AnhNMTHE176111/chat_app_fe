@@ -161,7 +161,7 @@ const EmojiManage: React.FC = () => {
       field: "actions",
       headerName: "Actions",
       width: 130,
-      renderCell: (params) => (
+      renderCell: (params: any) => (
         <>
           <IconButton onClick={() => handleEdit(params.row.id)}>
             <EditIcon />

@@ -1,38 +1,44 @@
 import { Box, IconButton, ListItemText, Tooltip } from "@mui/material";
 import React, { FC, useEffect, useState } from "react";
 import { AvatarOnline } from "../HomeForm";
-import { useAppDispatch, useAuth } from "../../hooks";
+import { useCall, useAppDispatch, useAuth } from "../../hooks";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import CallIcon from "@mui/icons-material/Call";
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
 import ViewSidebarOutlinedIcon from "@mui/icons-material/ViewSidebarOutlined";
-import { GROUP_CONVERSATION } from "../../constants";
+import { CALL_TYPE, GROUP_CONVERSATION } from "../../constants";
 import { addFriendRequest, getFriendById } from "../../services";
 import { HeaderConversationSkeleton } from "../Skeleton";
 import { showNotificationAction } from "../../stores/notificationActionSlice";
 
-interface HeaderConversation {
+interface HeaderConversationProps {
   conversation: any;
   isOnline: boolean;
   statusFriendReceiverId: string;
   handleToggleDrawer: () => void;
   handleAddFriend: () => void;
-  handleCall: () => void;
-  handleVideoCall: () => void;
   open: boolean;
 }
 
-export const HeaderConversation: FC<HeaderConversation> = ({
+export const HeaderConversation: FC<HeaderConversationProps> = ({
   conversation,
   isOnline,
   statusFriendReceiverId,
   handleToggleDrawer,
   handleAddFriend,
-  handleCall,
-  handleVideoCall,
   open,
 }) => {
+  const { handleStartCall } = useCall();
+
+  const handleVoiceCall = () => {
+    handleStartCall(conversation, CALL_TYPE.VOICE);
+  };
+
+  const handleVideoCall = () => {
+    handleStartCall(conversation, CALL_TYPE.VIDEO);
+  };
+
   return (
     <React.Fragment>
       <Box
@@ -69,7 +75,7 @@ export const HeaderConversation: FC<HeaderConversation> = ({
           </IconButton>
         </Tooltip>
         <Tooltip title="Call">
-          <IconButton onClick={handleCall}>
+          <IconButton onClick={handleVoiceCall}>
             <CallIcon />
           </IconButton>
         </Tooltip>
