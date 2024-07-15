@@ -20,5 +20,8 @@ export const SOCKET_EVENT = {
   CALLING_OFFER: "calling-offer",
   CALLING_DISCONNECT: "disconnect",
   START_CALL: "start-call",
-  RECEIVE_CALL: 'receive-call'
+  END_CALL: "end-call",
+  RECEIVE_CALL: "receive-call",
+  IS_IN_ANOTHER_CALL: "is-in-another-call",
+  ALREADY_MADE_ANSWER: "already-made-answer",
 };

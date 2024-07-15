@@ -14,6 +14,7 @@ import {
   CallPage,
   Profile,
   ContactsPage,
+  CallVoicePage,
 } from "../pages";
 import { RegisterSuccess } from "../components";
 import { AuthGuard, GuestGuard, RoleBasedGuard } from "../guards";
@@ -90,7 +91,7 @@ export const routes: RouteObject[] = [
   {
     element: (
       <AuthGuard>
-        <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
+        <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE, ROLES.ADMIN_ROLE]}>
           <SocketContextProvider>
             <CallContextProvider>
               <MessageContextProvider>
@@ -129,8 +130,12 @@ export const routes: RouteObject[] = [
         ],
       },
       {
-        path: "/call/:conversation_id/:initialize_call",
+        path: "/call-video/:conversation_id/:initialize_call",
         element: <CallVideoPage />,
+      },
+      {
+        path: "/call-voice/:conversation_id/:initialize_call",
+        element: <CallVoicePage />,
       },
     ],
   },
@@ -140,16 +145,16 @@ export const routes: RouteObject[] = [
     path: "/admin",
     element: (
       <AuthGuard>
-        <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
-          <SocketContextProvider>
+        <RoleBasedGuard accessibleRoles={[ROLES.ADMIN_ROLE]}>
+          {/* <SocketContextProvider>
             <CallContextProvider>
-              <MessageContextProvider>
-                <HomeLayout>
-                  <Outlet />
-                </HomeLayout>
-              </MessageContextProvider>
+              <MessageContextProvider> */}
+          <App>
+            <Outlet />
+          </App>
+          {/* </MessageContextProvider>
             </CallContextProvider>
-          </SocketContextProvider>
+          </SocketContextProvider> */}
         </RoleBasedGuard>
       </AuthGuard>
     ),

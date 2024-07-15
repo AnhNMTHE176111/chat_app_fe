@@ -9,10 +9,13 @@ export const GuestGuard: FC<{ children: ReactNode }> = ({ children }) => {
   if (!isInitialized) {
     return <>loading...</>;
   }
+  console.log('user', user);
 
   if (isAuthenticated) {
+    console.log('user', user);
+    
     if (user?.role == ROLES.ADMIN_ROLE) {
-      return <Navigate to={"/admin"} replace />;
+      return <Navigate to={"/admin/dashboard"} replace />;
     }
     return <Navigate to={"/"} replace />;
   }

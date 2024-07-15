@@ -111,7 +111,6 @@ export const ChatElement: FC<ChatElementProps> = ({ data, latestMessage }) => {
   // Cannot access 'user' before initialization
 
   function modifyContentLastestMessage(objectMessage: any) {
-    console.log(objectMessage);
     if (objectMessage == null) {
       return "";
     }

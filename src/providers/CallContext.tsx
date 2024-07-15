@@ -1,6 +1,6 @@
 import { createContext, FC, useCallback, useEffect, useState } from "react";
 import { useAuth, useSocket } from "../hooks";
-import { SOCKET_EVENT } from "../constants";
+import { CALL_TYPE, SOCKET_EVENT } from "../constants";
 import { DialogCall } from "../components";
 import { Socket } from "socket.io-client";
 
@@ -16,59 +16,103 @@ export const CallContextProvider: FC<{ children: any }> = ({ children }) => {
   const [localStream, setLocalStream] = useState<MediaStream>();
   const { socket } = useSocket();
   const [currentSocket, setCurrentSocket] = useState<any>(socket);
-  
   const [participants, setParticipants] = useState<any>([]);
   const { user } = useAuth();
   const [offer, setOffer] = useState<any>();
+  const [hasVideo, setHasVideo] = useState();
 
   useEffect(() => {
     if (socket) {
       setCurrentSocket(socket);
 
-      const handleRecieveCall = async (data: any) => {
-        const { offer, conversation } = data;
-        setOffer(offer);
-        setIsCalling(true);
-        setConversationCalling(conversation);
+      const handleReceiveCall = async (data: any) => {
+        const { offer, conversation, hasVideo } = data;
+        setHasVideo(hasVideo);
+        if (!conversationCalling) {
+          setOffer(offer);
+          setIsCalling(true);
+          setConversationCalling(conversation);
+        } else {
+          socket.emit(SOCKET_EVENT.IS_IN_ANOTHER_CALL, {
+            conversation: conversation,
+          });
+          setIsCalling(false);
+          setConversationCalling(null);
+        }
       };
-      socket.on(SOCKET_EVENT.RECEIVE_CALL, handleRecieveCall);
+
+      const handleAlreadyMadeAnswer = async (data: any) => {
+        const { offer, conversation, hasVideo } = data;
+        setHasVideo(hasVideo);
+        setIsCalling(false);
+      };
+
+      socket.on(SOCKET_EVENT.RECEIVE_CALL, handleReceiveCall);
+      socket.on(SOCKET_EVENT.ALREADY_MADE_ANSWER, handleAlreadyMadeAnswer);
+      socket.on(SOCKET_EVENT.END_CALL, (data: any) => {
+        const { conversation } = data;
+        setIsCalling(false);
+        setConversationCalling(null);
+      });
 
       return () => {
-        socket.off(SOCKET_EVENT.RECEIVE_CALL, handleRecieveCall);
+        socket.off(SOCKET_EVENT.RECEIVE_CALL, handleReceiveCall);
+        socket.off(SOCKET_EVENT.ALREADY_MADE_ANSWER, handleAlreadyMadeAnswer);
+        socket.off(SOCKET_EVENT.END_CALL);
       };
     }
   }, [socket]);
 
-  const handleStartCall = async (conversation: any) => {
-    const callWindow = window.open(
-      `/call/${conversation._id}/true`,
-      // `/call/${conversation._id}&startCall=true`,
-      "_blank",
-      "noopener,noreferrer,width=800,height=600"
-    );
-    if (callWindow) {
-      callWindow.opener = null;
+  const handleStartCall = async (conversation: any, type: string) => {
+    if (conversationCalling) {
+      alert("You are calling now.");
+      return;
+    }
+    if (conversation && conversation._id) {
+      setConversationCalling(conversation);
+      const uri =
+        type == CALL_TYPE.VIDEO
+          ? `/call-video/${conversation._id}/true?has_video=true`
+          : `/call-voice/${conversation._id}/true?has_video=false`;
+      const callWindow = window.open(
+        uri,
+        "_blank",
+        "noopener,noreferrer,width=800,height=600"
+      );
+      if (callWindow) {
+        callWindow.opener = null;
+      }
     }
   };
 
   const handleRecieve = async () => {
     setIsCalling(false);
-    const offerJson = JSON.stringify(offer);
-    const callWindow = window.open(
-      `/call/${conversationCalling._id}/false?offer=${encodeURIComponent(
-        offerJson
-      )}`,
-      // `/call/${conversationCalling._id}&startCall=false`,
-      "_blank",
-      "noopener,noreferrer,width=800,height=600"
-    );
-    if (callWindow) {
-      callWindow.opener = null;
+    if (offer && conversationCalling && conversationCalling._id) {
+      const offerJson = JSON.stringify(offer);
+      const uri = hasVideo
+        ? `/call-video/${
+            conversationCalling._id
+          }/false?&offer=${encodeURIComponent(offerJson)}`
+        : `/call-voice/${
+            conversationCalling._id
+          }/false?&offer=${encodeURIComponent(offerJson)}`;
+      const callWindow = window.open(
+        uri,
+        "_blank",
+        "noopener,noreferrer,width=800,height=600"
+      );
+      if (callWindow) {
+        callWindow.opener = null;
+      }
     }
   };
 
   const handleReject = () => {
     setIsCalling(false);
+    currentSocket.emit(SOCKET_EVENT.END_CALL, {
+      conversation: conversationCalling,
+    });
+    setConversationCalling(null);
   };
 
   return (

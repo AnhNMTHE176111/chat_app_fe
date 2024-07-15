@@ -182,7 +182,12 @@ export const Conversation: FC<ChatContainerProps> = ({
 
   useEffect(() => {
     const handleReceiveReact = (data: any) => {
-      console.log("data.message", data.message);
+      const copyMessages = [...messages];
+      const index = copyMessages.findIndex((message) => {
+        return message._id == data.message._id;
+      });
+      copyMessages[index] = { ...copyMessages[index], ...data.message };
+      setMessages(copyMessages);
     };
 
     socket?.on(SOCKET_EVENT.REACT_MESSAGE, handleReceiveReact);
@@ -190,7 +195,7 @@ export const Conversation: FC<ChatContainerProps> = ({
     return () => {
       socket?.off(SOCKET_EVENT.REACT_MESSAGE, handleReceiveReact);
     };
-  }, [socket]);
+  }, [socket, messages]);
 
   const handleClosePreviewImageDialog = () => {
     setOpenPreviewImage(false);
@@ -225,6 +230,19 @@ export const Conversation: FC<ChatContainerProps> = ({
         });
     }
   };
+
+  // const [isFriend, setIsFriend] = useState<boolean>(false);
+  // useEffect(() => {
+  //   if (conversation) {
+  //     if (
+  //       statusFriendReceiverId !== "accept" &&
+  //       conversation.type !== GROUP_CONVERSATION
+  //     ) {
+  //     } else {
+  //       setIsFriend(true);
+  //     }
+  //   }
+  // }, [statusFriendReceiverId, conversation]);
 
   const handleCall = () => {
     if (conversation) {
@@ -340,8 +358,8 @@ export const Conversation: FC<ChatContainerProps> = ({
             statusFriendReceiverId={statusFriendReceiverId}
             open={open}
             handleAddFriend={handleAddFriend}
-            handleCall={handleCall}
-            handleVideoCall={handleVideoCall}
+            // handleCall={handleCall}
+            // handleVideoCall={handleVideoCall}
             handleToggleDrawer={handleToggleDrawer}
           />
         </Grid>
@@ -355,6 +373,7 @@ export const Conversation: FC<ChatContainerProps> = ({
           }}
         >
           <MessagesList
+            conversation={conversation}
             messages={messages}
             setMessages={setMessages}
             isLoading={isLoading}

@@ -7,7 +7,7 @@ import CallIcon from "@mui/icons-material/Call";
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
 import ViewSidebarOutlinedIcon from "@mui/icons-material/ViewSidebarOutlined";
-import { GROUP_CONVERSATION } from "../../constants";
+import { CALL_TYPE, GROUP_CONVERSATION } from "../../constants";
 import { addFriendRequest, getFriendById } from "../../services";
 import { HeaderConversationSkeleton } from "../Skeleton";
 import { showNotificationAction } from "../../stores/notificationActionSlice";
@@ -18,8 +18,6 @@ interface HeaderConversationProps {
   statusFriendReceiverId: string;
   handleToggleDrawer: () => void;
   handleAddFriend: () => void;
-  handleCall: () => void;
-  handleVideoCall: () => void;
   open: boolean;
 }
 
@@ -29,14 +27,16 @@ export const HeaderConversation: FC<HeaderConversationProps> = ({
   statusFriendReceiverId,
   handleToggleDrawer,
   handleAddFriend,
-  handleVideoCall,
   open,
 }) => {
-
   const { handleStartCall } = useCall();
 
-  const handleCall = () => {
-    handleStartCall(conversation);
+  const handleVoiceCall = () => {
+    handleStartCall(conversation, CALL_TYPE.VOICE);
+  };
+
+  const handleVideoCall = () => {
+    handleStartCall(conversation, CALL_TYPE.VIDEO);
   };
 
   return (
@@ -75,7 +75,7 @@ export const HeaderConversation: FC<HeaderConversationProps> = ({
           </IconButton>
         </Tooltip>
         <Tooltip title="Call">
-          <IconButton onClick={handleCall}>
+          <IconButton onClick={handleVoiceCall}>
             <CallIcon />
           </IconButton>
         </Tooltip>
