@@ -36,13 +36,13 @@ export const ChatElement: FC<ChatElementProps> = ({ data, latestMessage }) => {
   const [conversation, setConversation] = useState(data);
   const [latestMsg, setLatestMsg] = useState<any>(data.latestMessage);
   const [latestMessageContent, setLatestMessageContent] = useState<string>(
-    modifyContentLastestMessage(data.latestMessage)
+    modifyContentLastestMessage(data.latestMessage || null)
   );
-  const [latestMessageTime, setLatestMessageTime] = useState<string>(
-    moment(data.latestMessage.createdAt).fromNow()
-  );
+  const [latestMessageTime, setLatestMessageTime] = useState<string>();
+  // moment(data.latestMessage.createdAt).fromNow()
+  // moment(new Date()).fromNow()
   const [isRead, setIsRead] = useState<boolean>(
-    data.latestMessage.readBy.includes(user?.id)
+    data?.latestMessage?.readBy?.includes(user?.id)
   );
 
   /** Attribute CSS When Selected or Read */
@@ -51,7 +51,7 @@ export const ChatElement: FC<ChatElementProps> = ({ data, latestMessage }) => {
   const messageWeight = isRead ? 0 : 600;
 
   useEffect(() => {
-    if (latestMessage && latestMessage.conversation_id == conversation._id) {
+    if (latestMessage && latestMessage?.conversation_id == conversation._id) {
       setLatestMsg(latestMessage);
       setLatestMessageContent(modifyContentLastestMessage(latestMessage));
       setLatestMessageTime(moment(latestMessage.createdAt).fromNow());
@@ -61,24 +61,28 @@ export const ChatElement: FC<ChatElementProps> = ({ data, latestMessage }) => {
 
   useEffect(() => {
     let interval = setInterval(() => {
-      setLatestMessageTime(moment(latestMsg.createdAt).fromNow());
+      if (latestMsg) {
+        setLatestMessageTime(moment(latestMsg.createdAt).fromNow());
+      }
     }, 6000);
 
     return () => clearInterval(interval);
   }, [latestMsg]);
 
   useEffect(() => {
-    if (id && latestMsg.conversation_id == id && !isRead) {
-      socket.emit(SOCKET_EVENT.READ_MESSAGE, {
-        userId: user?.id,
-        messageId: latestMsg._id,
-        createdAt: latestMsg.createdAt,
-        conversation_id: latestMsg.conversation_id,
-      });
-      latestMsg.readBy.push(user?.id);
-      setIsRead(
-        latestMsg.conversation_id == id && latestMsg.readBy.includes(user?.id)
-      );
+    if (latestMsg) {
+      if (id && latestMsg.conversation_id == id && !isRead) {
+        socket.emit(SOCKET_EVENT.READ_MESSAGE, {
+          userId: user?.id,
+          messageId: latestMsg._id,
+          createdAt: latestMsg.createdAt,
+          conversation_id: latestMsg.conversation_id,
+        });
+        latestMsg.readBy.push(user?.id);
+        setIsRead(
+          latestMsg.conversation_id == id && latestMsg.readBy.includes(user?.id)
+        );
+      }
     }
   }, [id, socket, latestMessage, data.latestMessage, user?.id]);
 
@@ -107,8 +111,15 @@ export const ChatElement: FC<ChatElementProps> = ({ data, latestMessage }) => {
   // Cannot access 'user' before initialization
 
   function modifyContentLastestMessage(objectMessage: any) {
+    console.log(objectMessage);
+    if (objectMessage == null) {
+      return "";
+    }
     const subjectName = getSubjectName(objectMessage.sender_id.fullName);
-    let subject = objectMessage.sender_id._id == user?.id ? "You" : subjectName;
+    let subject =
+      objectMessage.sender_id._id == user?.id
+        ? "You"
+        : subjectName || "Someone";
 
     let content = "";
     switch (objectMessage.messageType) {

@@ -1,9 +1,9 @@
+import React, { FC, useEffect, useState } from "react";
 import {
   Avatar,
   Box,
   Container,
   Divider,
-  Grid,
   IconButton,
   ImageList,
   ImageListItem,
@@ -19,21 +19,19 @@ import {
 import { AvatarOnline } from "../HomeForm";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SearchIcon from "@mui/icons-material/Search";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import ImageIcon from "@mui/icons-material/Image";
 import DescriptionIcon from "@mui/icons-material/Description";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import ArrowBackIosNewOutlinedIcon from "@mui/icons-material/ArrowBackIosNewOutlined";
-import React, { FC, useEffect, useState } from "react";
 import { sxCenterColumnFlex, sxCenterRowFlex } from "../../css/css_type";
 import { saveAs } from "file-saver";
-
 import {
   getAllFilesConversation,
   getAllMediasConversation,
 } from "../../services";
 import { useMessage } from "../../hooks";
 import { MESSAGE_TYPE } from "../../constants";
+import CreateGroupDialog from "./CreateGroupDialog";
 
 interface ConversationOptionsProps {
   open: boolean;
@@ -54,17 +52,18 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
   const [openFile, setOpenFile] = useState(false);
   const [medias, setMedias] = useState<any[]>();
   const [files, setFiles] = useState<any[]>();
+  const [openCreateGroupDialog, setOpenCreateGroupDialog] = useState(false);
   const { newMessage } = useMessage();
 
   useEffect(() => {
     if (!newMessage) {
       return;
     }
-    if (newMessage.conversation_id == id) {
-      if (newMessage.messageType == MESSAGE_TYPE.FILE) {
+    if (newMessage.conversation_id === id) {
+      if (newMessage.messageType === MESSAGE_TYPE.FILE) {
         setFiles((prev: any) => (prev ? [...prev, newMessage] : [newMessage]));
       }
-      if (newMessage.messageType == MESSAGE_TYPE.IMAGE) {
+      if (newMessage.messageType === MESSAGE_TYPE.IMAGE) {
         setMedias((prev: any) => (prev ? [...prev, newMessage] : [newMessage]));
       }
     }
@@ -95,6 +94,10 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
         setFiles(result.data);
       });
     }
+  };
+
+  const handleCreateGroup = () => {
+    setOpenCreateGroupDialog(true);
   };
 
   const [errorImage, setErrorImage] = useState<any[]>();
@@ -143,11 +146,6 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
             </Typography>
 
             <Box sx={{ my: 1 }}>
-              <Tooltip title="Add Friend">
-                <IconButton>
-                  <PersonAddIcon fontSize="large" />
-                </IconButton>
-              </Tooltip>
               <Tooltip title="Search Message">
                 <IconButton>
                   <SearchIcon fontSize="large" />
@@ -158,7 +156,10 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
                   <NotificationsIcon fontSize="large" />
                 </IconButton>
               </Tooltip>
-              <Tooltip title={`Create Group With ${conversation.title}`}>
+              <Tooltip
+                title={`Create Group With ${conversation.title}`}
+                onClick={handleCreateGroup}
+              >
                 <IconButton>
                   <GroupAddIcon fontSize="large" />
                 </IconButton>
@@ -170,7 +171,6 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
                 <Divider />
                 <Paper elevation={0}>
                   <ListItemButton
-                    // selected={selectedIndex === 0}
                     onClick={handleOpenMedia}
                     sx={{
                       borderRadius: "5px",
@@ -185,7 +185,6 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
                 </Paper>
                 <Paper elevation={0}>
                   <ListItemButton
-                    // selected={selectedIndex === 1}
                     onClick={handleOpenFile}
                     sx={{
                       borderRadius: "5px",
@@ -325,6 +324,11 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
           </Box>
         </Container>
       )}
+      <CreateGroupDialog
+        open={openCreateGroupDialog}
+        onClose={() => setOpenCreateGroupDialog(false)}
+        conversation={conversation}
+      />
     </React.Fragment>
   );
 };
