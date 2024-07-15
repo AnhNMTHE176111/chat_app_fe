@@ -138,4 +138,17 @@ export const getFriendById = async (id: string): Promise<BaseResponse> => {
   return res.data;
 };
 
+export const getFriendListNotInGroup = async (
+  id: string,
+  fullName: string
+): Promise<GetFriendListResponse> => {
+  const res = await client.get<GetFriendListResponse>(
+    URI.FRIEND_LIST_NOT_IN_GROUP.replace(":conversation_id", id).replace(
+      ":fullName",
+      fullName
+    )
+  );
+  return res.data;
+};
+
 export {};
