@@ -5,3 +5,5 @@ export * from "./InputMessage";
 export * from "./MessagesList";
 export * from "./CreateGroupDialog";
 export * from "./MultiSelectCardList";
+export * from "./AddFriendToConversationDialog";
+export * from "./MemberListDialog";
