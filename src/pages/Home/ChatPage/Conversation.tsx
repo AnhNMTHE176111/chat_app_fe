@@ -1,4 +1,12 @@
-import { Container, Grid, IconButton, ListItemText } from "@mui/material";
+import {
+  Container,
+  Grid,
+  IconButton,
+  ListItemText,
+  Tooltip,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { useLocation, useParams } from "react-router-dom";
 import { FC, useEffect, useRef, useState } from "react";
 import {
@@ -30,6 +38,7 @@ import {
 } from "../../../constants";
 import ClearIcon from "@mui/icons-material/Clear";
 import { ChatContainerProps } from "../../../providers";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import { showNotificationAction } from "../../../stores/notificationActionSlice";
 
 export const Conversation: FC<ChatContainerProps> = ({
@@ -39,6 +48,7 @@ export const Conversation: FC<ChatContainerProps> = ({
   setLatestMessage,
   setMessages,
   setNewMessage,
+  onClick,
 }) => {
   const { user } = useAuth();
   const { id } = useParams<string>();
@@ -280,49 +290,8 @@ export const Conversation: FC<ChatContainerProps> = ({
     }
   };
 
-  /** Infinite Scroll */
-  // const observer = useRef<any>();
-  // const [isLoadMoreMsg, setIsLoadMoreMsg] = useState(false);
-  // useEffect(() => {
-  //   if (observer.current) {
-  //     observer.current.disconnect();
-  //     console.log(observer.current);
-  //   }
-  //   observer.current = new IntersectionObserver(
-  //     (entries) => {
-  //       if (entries[0].isIntersecting) {
-  //         loadMoreData();
-  //       }
-  //     },
-  //     {
-  //       root: chatContainerRef.current,
-  //       threshold: 1,
-  //       rootMargin: "0px 1px",
-  //     }
-  //   );
-  //   if (topMessageRef.current) {
-  //     observer.current.observe(topMessageRef.current);
-  //   }
-  //   return () => {
-  //     if (observer.current) observer.current.disconnect();
-  //   };
-  // }, [topMessageRef, messages]);
-  // const loadMoreData = () => {
-  //   if (id) {
-  //     setIsLoading(true);
-  //     setIsLoadMoreMsg(true);
-  //     return loadMoreMessageConversation(id, messages[0].createdAt)
-  //       .then((result: any) => {
-  //         setMessages((prev: any) => [...result.data, ...prev]);
-  //       })
-  //       .catch((error) => {
-  //         console.log("error", error);
-  //       })
-  //       .finally(() => {
-  //         setIsLoading(false);
-  //       });
-  //   }
-  // };
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   return (
     <Grid container sx={{ height: "100%" }}>
@@ -331,120 +300,262 @@ export const Conversation: FC<ChatContainerProps> = ({
         onClose={handleClosePreviewImageDialog}
         image={previewImageLink}
       />
-      <Grid
-        item
-        xs={open ? 8 : 12}
-        sx={{
-          height: "100%",
-          backgroundColor: "#f7f7ff",
-        }}
-      >
-        {/* HEADER CONVERSATION */}
-        <Grid
-          item
-          xs={12}
-          sx={{
-            height: "8%",
-            alignItems: "center",
-            backgroundColor: "white",
-            display: "flex",
-            justifyContent: "space-between",
-            padding: "0 10px",
-          }}
-        >
-          <HeaderConversation
-            conversation={conversation}
-            isOnline={isOnline}
-            statusFriendReceiverId={statusFriendReceiverId}
-            open={open}
-            handleAddFriend={handleAddFriend}
-            // handleCall={handleCall}
-            // handleVideoCall={handleVideoCall}
-            handleToggleDrawer={handleToggleDrawer}
-          />
-        </Grid>
-
-        {/* MESSAGE CONTAINER */}
-        <Grid
-          item
-          xs={12}
-          sx={{
-            height: threadMessage ? "75%" : "82%",
-          }}
-        >
-          <MessagesList
-            conversation={conversation}
-            messages={messages}
-            setMessages={setMessages}
-            isLoading={isLoading}
-            handleOpenPreviewImageDialog={handleOpenPreviewImageDialog}
-            lastMessageRef={lastMessageRef}
-            setThreadMessage={setThreadMessage}
-            receiver={receiver}
-          />
-        </Grid>
-
-        {/* INPUT MESSAGE */}
-        <Grid
-          container
-          item
-          xs={12}
-          sx={{
-            minHeight: threadMessage ? "15%" : "10%",
-            height: "auto",
-            boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.25)",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {threadMessage && (
-            <Container
+      {!isSmallScreen && (
+        <>
+          <Grid
+            item
+            xs={open ? 8 : 12}
+            sx={{
+              height: "100%",
+              backgroundColor: "#f7f7ff",
+            }}
+          >
+            {/* HEADER CONVERSATION */}
+            <Grid
+              item
+              xs={12}
               sx={{
-                display: "flex",
+                height: "8%",
                 alignItems: "center",
-                alignContent: "center",
+                backgroundColor: "white",
+                display: "flex",
                 justifyContent: "space-between",
+                padding: "0 10px",
               }}
             >
-              <ListItemText
-                primary={threadMessage.replyTo}
-                secondary={threadMessage.content}
+              <HeaderConversation
+                conversation={conversation}
+                isOnline={isOnline}
+                statusFriendReceiverId={statusFriendReceiverId}
+                open={open}
+                handleAddFriend={handleAddFriend}
+                // handleCall={handleCall}
+                // handleVideoCall={handleVideoCall}
+                handleToggleDrawer={handleToggleDrawer}
+                onClick={onClick}
               />
-              <IconButton
-                aria-label="delete"
-                size="large"
-                onClick={() => setThreadMessage(null)}
-              >
-                <ClearIcon />
-              </IconButton>
-            </Container>
-          )}
-          <InputMessage
-            conversationId={id}
-            handleSendMessage={handleSendMessage}
-            progressUpload={progressUpload}
-            threadMessage={threadMessage}
-          />
-        </Grid>
-      </Grid>
+            </Grid>
 
-      {open && (
-        <Grid
-          container
-          item
-          xs={open ? 4 : 0}
-          sx={{
-            height: "100%",
-          }}
-        >
-          <ConversationOptions
-            open={open}
-            conversation={conversation}
-            isOnline={isOnline}
-            id={id}
-            handleOpenPreviewImageDialog={handleOpenPreviewImageDialog}
-          />
-        </Grid>
+            {/* MESSAGE CONTAINER */}
+            <Grid
+              item
+              xs={12}
+              sx={{
+                height: threadMessage ? "75%" : "82%",
+              }}
+            >
+              <MessagesList
+                conversation={conversation}
+                messages={messages}
+                setMessages={setMessages}
+                isLoading={isLoading}
+                handleOpenPreviewImageDialog={handleOpenPreviewImageDialog}
+                lastMessageRef={lastMessageRef}
+                setThreadMessage={setThreadMessage}
+                receiver={receiver}
+              />
+            </Grid>
+
+            {/* INPUT MESSAGE */}
+            <Grid
+              container
+              item
+              xs={12}
+              sx={{
+                minHeight: threadMessage ? "15%" : "10%",
+                height: "auto",
+                boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.25)",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {threadMessage && (
+                <Container
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    alignContent: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <ListItemText
+                    primary={threadMessage.replyTo}
+                    secondary={threadMessage.content}
+                  />
+                  <IconButton
+                    aria-label="delete"
+                    size="large"
+                    onClick={() => setThreadMessage(null)}
+                  >
+                    <ClearIcon />
+                  </IconButton>
+                </Container>
+              )}
+              <InputMessage
+                conversationId={id}
+                handleSendMessage={handleSendMessage}
+                progressUpload={progressUpload}
+                threadMessage={threadMessage}
+              />
+            </Grid>
+          </Grid>
+
+          {open && (
+            <Grid
+              container
+              item
+              xs={open ? 4 : 0}
+              sx={{
+                height: "100%",
+              }}
+            >
+              <ConversationOptions
+                open={open}
+                conversation={conversation}
+                isOnline={isOnline}
+                id={id}
+                handleOpenPreviewImageDialog={handleOpenPreviewImageDialog}
+              />
+            </Grid>
+          )}
+        </>
+      )}
+
+      {isSmallScreen && (
+        <>
+          {!open && (
+            <Grid
+              item
+              xs={12}
+              sx={{
+                height: "100%",
+                backgroundColor: "#f7f7ff",
+              }}
+            >
+              {/* HEADER CONVERSATION */}
+              <Grid
+                item
+                xs={12}
+                sx={{
+                  height: "8%",
+                  alignItems: "center",
+                  backgroundColor: "white",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  padding: "0 10px",
+                }}
+              >
+                <HeaderConversation
+                  conversation={conversation}
+                  isOnline={isOnline}
+                  statusFriendReceiverId={statusFriendReceiverId}
+                  open={open}
+                  handleAddFriend={handleAddFriend}
+                  // handleCall={handleCall}
+                  // handleVideoCall={handleVideoCall}
+                  handleToggleDrawer={handleToggleDrawer}
+                  onClick={onClick}
+                />
+              </Grid>
+
+              {/* MESSAGE CONTAINER */}
+              <Grid
+                item
+                xs={12}
+                sx={{
+                  height: threadMessage ? "75%" : "82%",
+                }}
+              >
+                <MessagesList
+                  conversation={conversation}
+                  messages={messages}
+                  setMessages={setMessages}
+                  isLoading={isLoading}
+                  handleOpenPreviewImageDialog={handleOpenPreviewImageDialog}
+                  lastMessageRef={lastMessageRef}
+                  setThreadMessage={setThreadMessage}
+                  receiver={receiver}
+                />
+              </Grid>
+
+              {/* INPUT MESSAGE */}
+              <Grid
+                container
+                item
+                xs={12}
+                sx={{
+                  minHeight: threadMessage ? "15%" : "10%",
+                  height: "auto",
+                  boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.25)",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {threadMessage && (
+                  <Container
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      alignContent: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <ListItemText
+                      primary={threadMessage.replyTo}
+                      secondary={threadMessage.content}
+                    />
+                    <IconButton
+                      aria-label="delete"
+                      size="large"
+                      onClick={() => setThreadMessage(null)}
+                    >
+                      <ClearIcon />
+                    </IconButton>
+                  </Container>
+                )}
+                <InputMessage
+                  conversationId={id}
+                  handleSendMessage={handleSendMessage}
+                  progressUpload={progressUpload}
+                  threadMessage={threadMessage}
+                />
+              </Grid>
+            </Grid>
+          )}
+
+          {open && (
+            <Grid
+              container
+              item
+              xs={12}
+              sx={{
+                height: "100%",
+              }}
+            >
+              <Grid
+                container
+                item
+                xs={12}
+                sx={{
+                  height: "10%",
+                }}
+              >
+                <Tooltip title="Back">
+                  <IconButton onClick={handleToggleDrawer}>
+                    <ArrowBackIosIcon />
+                  </IconButton>
+                </Tooltip>
+              </Grid>
+              <ConversationOptions
+                open={open}
+                conversation={conversation}
+                isOnline={isOnline}
+                id={id}
+                handleOpenPreviewImageDialog={handleOpenPreviewImageDialog}
+              />
+            </Grid>
+          )}
+        </>
       )}
     </Grid>
   );

@@ -1,4 +1,11 @@
-import { Box, IconButton, ListItemText, Tooltip } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  ListItemText,
+  Tooltip,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import React, { FC, useEffect, useState } from "react";
 import { AvatarOnline } from "../HomeForm";
 import { useCall, useAppDispatch, useAuth } from "../../hooks";
@@ -11,6 +18,8 @@ import { CALL_TYPE, GROUP_CONVERSATION } from "../../constants";
 import { addFriendRequest, getFriendById } from "../../services";
 import { HeaderConversationSkeleton } from "../Skeleton";
 import { showNotificationAction } from "../../stores/notificationActionSlice";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import { slideText } from "../../helpers/utils";
 
 interface HeaderConversationProps {
   conversation: any;
@@ -18,6 +27,7 @@ interface HeaderConversationProps {
   statusFriendReceiverId: string;
   handleToggleDrawer: () => void;
   handleAddFriend: () => void;
+  onClick?: () => void;
   open: boolean;
 }
 
@@ -27,8 +37,11 @@ export const HeaderConversation: FC<HeaderConversationProps> = ({
   statusFriendReceiverId,
   handleToggleDrawer,
   handleAddFriend,
+  onClick,
   open,
 }) => {
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const { handleStartCall } = useCall();
 
   const handleVoiceCall = () => {
@@ -49,6 +62,11 @@ export const HeaderConversation: FC<HeaderConversationProps> = ({
           alignItems: "center",
         }}
       >
+        <Tooltip title="Back">
+          <IconButton onClick={onClick}>
+            <ArrowBackIosIcon />
+          </IconButton>
+        </Tooltip>
         {conversation && (
           <AvatarOnline
             srcImage={conversation?.picture}
@@ -60,7 +78,7 @@ export const HeaderConversation: FC<HeaderConversationProps> = ({
           sx={{
             marginLeft: "10px",
           }}
-          primary={conversation?.title}
+          primary={isSmallScreen ? slideText(conversation?.title, 10) :  conversation?.title}
           secondary={isOnline ? "Online" : "Offline"}
         />
       </Box>
