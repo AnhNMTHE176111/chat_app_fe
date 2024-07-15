@@ -9,11 +9,30 @@ import {
   SendActivationPage,
   VerifyAccountPage,
   verifyAccountLoader,
+  ChatPage,
+  CallVideoPage,
+  CallPage,
+  Profile,
+  ContactsPage,
+  CallVoicePage,
 } from "../pages";
 import { RegisterSuccess } from "../components";
 import { AuthGuard, GuestGuard, RoleBasedGuard } from "../guards";
 import { ROLES } from "../constants";
+import { HomeLayout } from "../layouts";
+import {
+  CallContextProvider,
+  MessageContextProvider,
+  SocketContextProvider,
+} from "../providers";
 
+import Dashboard from "../pages/Admin/Dashboard/Dashboard";
+import EmojiManager from "../pages/Admin/EmojiManage/EmojiManage";
+import UserManager from "../pages/Admin/UserManage/UserManage";
+import AddEmojiPage from "../pages/Admin/EmojiManage/AddEmoji";
+import AddEmoji from "../pages/Admin/EmojiManage/AddEmoji";
+import { logout } from "../services";
+// import UserManager from "../pages/Admin/UserManage";
 export const routes: RouteObject[] = [
   /** Unauthenticated Route */
   {
@@ -72,24 +91,51 @@ export const routes: RouteObject[] = [
   {
     element: (
       <AuthGuard>
-        <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE]}>
-          <Outlet />
+        <RoleBasedGuard accessibleRoles={[ROLES.NORMAL_ROLE, ROLES.ADMIN_ROLE]}>
+          <SocketContextProvider>
+            <CallContextProvider>
+              <MessageContextProvider>
+                <Outlet />
+              </MessageContextProvider>
+            </CallContextProvider>
+          </SocketContextProvider>
         </RoleBasedGuard>
       </AuthGuard>
     ),
     errorElement: <NotFoundPage />,
     children: [
       {
-        path: "/",
-        element: <App />,
+        element: (
+          <HomeLayout>
+            <Outlet />
+          </HomeLayout>
+        ),
+        children: [
+          {
+            path: "/",
+            element: <ChatPage />,
+          },
+          {
+            path: "/chat/:id",
+            element: <ChatPage />,
+          },
+          {
+            path: "/profile",
+            element: <Profile />,
+          },
+          {
+            path: "/contacts",
+            element: <ContactsPage />,
+          },
+        ],
       },
       {
-        path: "/home",
-        element: <App />,
+        path: "/call-video/:conversation_id/:initialize_call",
+        element: <CallVideoPage />,
       },
       {
-        path: "/about",
-        element: <App />,
+        path: "/call-voice/:conversation_id/:initialize_call",
+        element: <CallVoicePage />,
       },
     ],
   },
@@ -100,14 +146,30 @@ export const routes: RouteObject[] = [
     element: (
       <AuthGuard>
         <RoleBasedGuard accessibleRoles={[ROLES.ADMIN_ROLE]}>
-          <Outlet />
+          {/* <SocketContextProvider>
+            <CallContextProvider>
+              <MessageContextProvider> */}
+          <App>
+            <Outlet />
+          </App>
+          {/* </MessageContextProvider>
+            </CallContextProvider>
+          </SocketContextProvider> */}
         </RoleBasedGuard>
       </AuthGuard>
     ),
     children: [
       {
-        path: "",
-        element: <App />,
+        path: "dashboard",
+        element: <Dashboard />,
+      },
+      {
+        path: "manage-user",
+        element: <UserManager />,
+      },
+      {
+        path: "manage-emoji",
+        element: <EmojiManager />,
       },
     ],
   },

@@ -14,7 +14,7 @@ import {
   GoogleSignButton,
   NotificationAction,
 } from "../../components";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { LoginParams, LoginResponse, login } from "../../services";
 import { useAppSelector, useAppDispatch, useAuth, signin } from "../../hooks";
@@ -22,8 +22,10 @@ import {
   hideNotificationAction,
   showNotificationAction,
 } from "../../stores/notificationActionSlice";
+import { ROLES } from "../../constants";
 
 export const LoginPage = () => {
+  const navigate = useNavigate();
   const { dispatch } = useAuth();
 
   const location = useLocation();
@@ -57,8 +59,10 @@ export const LoginPage = () => {
         dispatch(
           signin({
             user: {
+              id: response.data.id,
               email: response.data.email,
               fullName: response.data.fullName,
+              avatar: response.data.avatar,
               role: response.data.role,
             },
           })
