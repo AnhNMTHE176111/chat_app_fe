@@ -6,3 +6,4 @@ export * from "./AddressInput";
 export * from "./DateOfBirthInput";
 export * from "./ProfileCard";
 export * from "./PersonCard";
+export * from "./PublicInformationChecked";
