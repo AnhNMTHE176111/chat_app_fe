@@ -28,10 +28,16 @@ import { saveAs } from "file-saver";
 import {
   getAllFilesConversation,
   getAllMediasConversation,
+  getMemberInConversation,
+  MemberListParams,
+  // updateMemberRole,
+  // kickMemberFromConversation,
 } from "../../services";
-import { useMessage } from "../../hooks";
+import { useAuth, useMessage } from "../../hooks";
 import { MESSAGE_TYPE } from "../../constants";
 import CreateGroupDialog from "./CreateGroupDialog";
+import MemberListDialog from "./MemberListDialog";
+import { Group } from "@mui/icons-material";
 
 interface ConversationOptionsProps {
   open: boolean;
@@ -48,11 +54,18 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
   id,
   handleOpenPreviewImageDialog,
 }) => {
+  const { user } = useAuth();
   const [openMedia, setOpenMedia] = useState(false);
   const [openFile, setOpenFile] = useState(false);
   const [medias, setMedias] = useState<any[]>();
   const [files, setFiles] = useState<any[]>();
   const [openCreateGroupDialog, setOpenCreateGroupDialog] = useState(false);
+  const [openMemberListDialog, setOpenMemberListDialog] = useState(false);
+  const [members, setMembers] = useState<MemberListParams>({
+    memberList: [],
+    admin: [],
+    conversationId: "",
+  });
   const { newMessage } = useMessage();
 
   useEffect(() => {
@@ -93,6 +106,29 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
       getAllFilesConversation(id).then((result) => {
         setFiles(result.data);
       });
+    }
+  };
+
+  const handleShowMembers = () => {
+    getMemberInConversation(conversation?._id)
+      .then((res) => {
+        setMembers(res.data);
+        setOpenMemberListDialog(true);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const handleResetMembers = () => {
+    if (id) {
+      getMemberInConversation(id)
+        .then((res) => {
+          setMembers(res.data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
   };
 
@@ -159,9 +195,23 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
               <Tooltip
                 title={`Create Group With ${conversation.title}`}
                 onClick={handleCreateGroup}
+                sx={{
+                  display: conversation.type === "group" ? "none" : "",
+                }}
               >
                 <IconButton>
                   <GroupAddIcon fontSize="large" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip
+                title={"Members"}
+                onClick={handleShowMembers}
+                sx={{
+                  display: conversation.type === "group" ? "" : "none",
+                }}
+              >
+                <IconButton>
+                  <Group fontSize="large" />
                 </IconButton>
               </Tooltip>
             </Box>
@@ -328,6 +378,13 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
         open={openCreateGroupDialog}
         onClose={() => setOpenCreateGroupDialog(false)}
         conversation={conversation}
+      />
+      <MemberListDialog
+        open={openMemberListDialog}
+        onClose={() => setOpenMemberListDialog(false)}
+        members={members}
+        userId={user?.id || ""}
+        resetMembers={handleResetMembers}
       />
     </React.Fragment>
   );

@@ -11,6 +11,7 @@ export interface ChangeProfileInformationParams {
   gender: string;
   description: string;
   background: string;
+  publicInformation: boolean;
 }
 
 export interface ProfilePreviewParams {
@@ -21,6 +22,7 @@ export interface ProfilePreviewParams {
   dateOfBirth: string;
   address: string;
   gender: string;
+  publicInformation: boolean;
 }
 
 export interface FriendListParams {
@@ -111,11 +113,20 @@ export const addFriendRequest = async (
   return res.data;
 };
 
-export const findUserByEmail = async (
-  email: string
+export const findUserByFullName = async (
+  fullName: string
 ): Promise<GetFriendListResponse> => {
   const res = await client.get<GetFriendListResponse>(
-    URI.FIND_USER_BY_EMAIL.replace(":email", email)
+    URI.FIND_USER_BY_FULL_NAME.replace(":fullName", fullName)
+  );
+  return res.data;
+};
+
+export const findFriendByFullName = async (
+  fullName: string
+): Promise<GetFriendListResponse> => {
+  const res = await client.get<GetFriendListResponse>(
+    URI.FIND_FRIEND_BY_FULL_NAME.replace(":fullName", fullName)
   );
   return res.data;
 };
@@ -123,6 +134,19 @@ export const findUserByEmail = async (
 export const getFriendById = async (id: string): Promise<BaseResponse> => {
   const res = await client.get<BaseResponse>(
     URI.GET_FRIEND_BY_ID.replace(":id", id)
+  );
+  return res.data;
+};
+
+export const getFriendListNotInGroup = async (
+  id: string,
+  fullName: string
+): Promise<GetFriendListResponse> => {
+  const res = await client.get<GetFriendListResponse>(
+    URI.FRIEND_LIST_NOT_IN_GROUP.replace(":conversation_id", id).replace(
+      ":fullName",
+      fullName
+    )
   );
   return res.data;
 };

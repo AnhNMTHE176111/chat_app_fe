@@ -1,16 +1,20 @@
-import { Box, IconButton, ListItemText, Tooltip } from "@mui/material";
-import React, { FC, useEffect, useState } from "react";
+import {
+  Alert,
+  Box,
+  IconButton,
+  ListItemText,
+  Snackbar,
+  Tooltip,
+} from "@mui/material";
+import React, { FC, useState } from "react";
 import { AvatarOnline } from "../HomeForm";
-import { useCall, useAppDispatch, useAuth } from "../../hooks";
+import { useCall } from "../../hooks";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import CallIcon from "@mui/icons-material/Call";
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
 import ViewSidebarOutlinedIcon from "@mui/icons-material/ViewSidebarOutlined";
-import { CALL_TYPE, GROUP_CONVERSATION } from "../../constants";
-import { addFriendRequest, getFriendById } from "../../services";
-import { HeaderConversationSkeleton } from "../Skeleton";
-import { showNotificationAction } from "../../stores/notificationActionSlice";
+import { CALL_TYPE } from "../../constants";
 
 interface HeaderConversationProps {
   conversation: any;
@@ -30,13 +34,32 @@ export const HeaderConversation: FC<HeaderConversationProps> = ({
   open,
 }) => {
   const { handleStartCall } = useCall();
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const handleVoiceCall = () => {
+    if (conversation.type === "single" && statusFriendReceiverId !== "accept") {
+      setSnackbarOpen(true);
+      return;
+    }
     handleStartCall(conversation, CALL_TYPE.VOICE);
   };
 
   const handleVideoCall = () => {
+    if (conversation.type === "single" && statusFriendReceiverId !== "accept") {
+      setSnackbarOpen(true);
+      return;
+    }
     handleStartCall(conversation, CALL_TYPE.VIDEO);
+  };
+
+  const showAddFriendIcon =
+    (conversation.type === "single" && statusFriendReceiverId !== "accept") ||
+    conversation.type === "group"
+      ? true
+      : false;
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   return (
@@ -65,15 +88,13 @@ export const HeaderConversation: FC<HeaderConversationProps> = ({
         />
       </Box>
       <Box>
-        <Tooltip
-          title="Add Friend"
-          style={statusFriendReceiverId ? { display: "none" } : {}}
-          onClick={handleAddFriend}
-        >
-          <IconButton>
-            <PersonAddIcon />
-          </IconButton>
-        </Tooltip>
+        {showAddFriendIcon && (
+          <Tooltip title="Add Friend">
+            <IconButton onClick={handleAddFriend}>
+              <PersonAddIcon />
+            </IconButton>
+          </Tooltip>
+        )}
         <Tooltip title="Call">
           <IconButton onClick={handleVoiceCall}>
             <CallIcon />
@@ -97,6 +118,16 @@ export const HeaderConversation: FC<HeaderConversationProps> = ({
             </IconButton>
           </Tooltip>
         )}
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        >
+          <Alert onClose={handleCloseSnackbar} severity="error">
+            You must be friends to use this feature.
+          </Alert>
+        </Snackbar>
       </Box>
     </React.Fragment>
   );

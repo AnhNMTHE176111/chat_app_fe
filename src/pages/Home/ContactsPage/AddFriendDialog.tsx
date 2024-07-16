@@ -21,7 +21,7 @@ import {
   addFriendRequest,
   createSingleConversation,
   CreateSingleConversationParams,
-  findUserByEmail,
+  findUserByFullName,
   FriendListParams,
 } from "../../../services";
 import { useAppDispatch, useAuth } from "../../../hooks";
@@ -46,7 +46,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({
   onCloseDialog,
 }) => {
   const { user } = useAuth();
-  const [email, setEmail] = React.useState("");
+  const [name, setName] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [foundUsers, setFoundUsers] = React.useState<FriendListParams[]>([]);
   const dispatchNoti = useAppDispatch();
@@ -71,18 +71,18 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({
     setSelectedUserId(null);
   };
 
-  const handleFindByEmail = (email: string) => {
-    if (!email) {
+  const handFindUserByFullName = (name: string) => {
+    if (!name) {
       dispatchNoti(
         showNotificationAction({
-          message: "Email is required",
+          message: "Name is required",
           severity: "error",
         })
       );
       return;
     }
     setLoading(true);
-    findUserByEmail(email)
+    findUserByFullName(name)
       .then((resp) => {
         if (resp.success) {
           setFoundUsers(resp.data);
@@ -110,7 +110,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({
       createSingleConversation(data)
         .then((res) => {
           if (res.success) {
-            navigate(`/chat/${id}`);
+            navigate(`/chat/${res.data._id}`);
           }
         })
         .catch((error) => {
@@ -133,7 +133,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({
           if (res.success) {
             setSelectedUserId(null);
             setFoundUsers([]);
-            setEmail("");
+            setName("");
             onCloseDialog();
             dispatchNoti(
               showNotificationAction({
@@ -177,17 +177,17 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({
       <DialogTitle>Add Friend</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Please enter the email address of the user you want to add
+          Please enter the name of the user you want to add
         </DialogContentText>
         <TextField
           autoFocus
           margin="dense"
           id="name"
           size="small"
-          label="Email Address"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          type="email"
+          label="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          type="text"
           fullWidth
           sx={{ mb: 2 }}
           variant="standard"
@@ -250,7 +250,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({
         </Menu>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => handleFindByEmail(email)}>Find</Button>
+        <Button onClick={() => handFindUserByFullName(name)}>Find</Button>{" "}
         <Button onClick={onCloseDialog}>Cancel</Button>
       </DialogActions>
     </Dialog>
