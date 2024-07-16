@@ -11,6 +11,7 @@ import { useLocation, useParams } from "react-router-dom";
 import { FC, useEffect, useRef, useState } from "react";
 import {
   addFriendRequest,
+  addFriendToConversation,
   getConversationByID,
   getFriendById,
   getMessagesConversation,
@@ -22,6 +23,7 @@ import {
   ConversationOptions,
   InputMessage,
   MessagesList,
+  AddFriendToConversationDialog,
 } from "../../../components";
 import {
   useAppDispatch,
@@ -74,6 +76,9 @@ export const Conversation: FC<ChatContainerProps> = ({
   /** Preview Image */
   const [openPreviewImage, setOpenPreviewImage] = useState<boolean>(false);
   const [previewImageLink, setPreviewImageLink] = useState<string>("");
+
+  // Add Friend Dialog State
+  const [openAddFriendDialog, setOpenAddFriendDialog] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -215,29 +220,37 @@ export const Conversation: FC<ChatContainerProps> = ({
     setPreviewImageLink(imageLink);
   };
 
+  const handleCloseAddFriendDialog = () => {
+    setOpenAddFriendDialog(false);
+  };
+
   const handleAddFriend = () => {
     if (user?.id) {
-      addFriendRequest(user.id, {
-        friendId: receiverId,
-      })
-        .then((res) => {
-          if (res.success) {
+      if (conversation?.type === GROUP_CONVERSATION) {
+        setOpenAddFriendDialog(true);
+      } else {
+        addFriendRequest(user.id, {
+          friendId: receiverId,
+        })
+          .then((res) => {
+            if (res.success) {
+              dispatchNoti(
+                showNotificationAction({
+                  message: "Request sent successfully",
+                  severity: "success",
+                })
+              );
+            }
+          })
+          .catch((err) => {
             dispatchNoti(
               showNotificationAction({
-                message: "Request sent successfully",
-                severity: "success",
+                message: err?.message?.data?.message || "Something went wrong",
+                severity: "error",
               })
             );
-          }
-        })
-        .catch((err) => {
-          dispatchNoti(
-            showNotificationAction({
-              message: err?.message?.data?.message || "Something went wrong",
-              severity: "error",
-            })
-          );
-        });
+          });
+      }
     }
   };
 
@@ -292,6 +305,29 @@ export const Conversation: FC<ChatContainerProps> = ({
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  
+  const handleAddFriendToConversation = (ListFriend: string[]) => {
+    addFriendToConversation(conversation._id, ListFriend)
+      .then((res) => {
+        if (res.success) {
+          dispatchNoti(
+            showNotificationAction({
+              message: "Add friend successfully",
+              severity: "success",
+            })
+          );
+        }
+      })
+      .catch((err) => {
+        dispatchNoti(
+          showNotificationAction({
+            message: err?.message?.data?.message || "Something went wrong",
+            severity: "error",
+          })
+        );
+      });
+  };
+
 
   return (
     <Grid container sx={{ height: "100%" }}>
@@ -556,6 +592,15 @@ export const Conversation: FC<ChatContainerProps> = ({
             </Grid>
           )}
         </>
+      )}
+
+      {openAddFriendDialog && (
+        <AddFriendToConversationDialog
+          dialogOpen={openAddFriendDialog}
+          conversation={conversation}
+          onCloseDialog={handleCloseAddFriendDialog}
+          handleAddFriendToConversation={handleAddFriendToConversation}
+        />
       )}
     </Grid>
   );

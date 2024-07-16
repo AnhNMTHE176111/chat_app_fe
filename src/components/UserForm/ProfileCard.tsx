@@ -7,6 +7,8 @@ import {
   DialogTitle,
   DialogContent,
   CircularProgress,
+  Alert,
+  AlertTitle,
 } from "@mui/material";
 import { getProfileByPreview } from "../../services";
 import React, { useEffect, useState } from "react";
@@ -26,13 +28,17 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 }) => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [messageResp, setMessageResp] = useState<string>("");
   const dispatchNoti = useAppDispatch();
 
   useEffect(() => {
     if (open) {
       getProfileByPreview(id)
         .then((res) => {
-          setUser(res.data);
+          if (res.success) {
+            setUser(res.data);
+            setMessageResp(res.message || "User not published");
+          }
         })
         .catch((error) => {
           dispatchNoti(
@@ -42,24 +48,24 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
             })
           );
         })
-        .finally(() => {
-          setLoading(false);
-        });
+        .finally(() => setLoading(false));
     }
   }, [id, open]);
 
   if (!open) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} sx={{ width: "400" }}>
-      <DialogTitle sx={{ padding: "8px 8px" }}>Profile Information</DialogTitle>
-      <DialogContent sx={{ padding: 0, overflow: "hidden" }}>
-        {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <>
+    <>
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Dialog open={open} onClose={onClose} sx={{ width: "400" }}>
+          <DialogTitle sx={{ padding: "8px 8px" }}>
+            Profile Information
+          </DialogTitle>
+          <DialogContent sx={{ padding: 0, overflow: "hidden" }}>
             <Box
               sx={{
                 height: 150,
@@ -79,7 +85,11 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
                 <Typography variant="h6">{user?.fullName}</Typography>
               </Box>
               <Box
-                sx={{ mt: 2, display: "flex", justifyContent: "space-between" }}
+                sx={{
+                  mt: 2,
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
                 gap={2}
               >
                 <TextField
@@ -88,6 +98,12 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
                   variant="outlined"
                   size="small"
                   value={user?.gender}
+                  sx={{
+                    display:
+                      user?.publicInformation && user?.gender
+                        ? "block"
+                        : "none",
+                  }}
                   InputProps={{
                     readOnly: true,
                   }}
@@ -99,6 +115,12 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
                   size="small"
                   type="date"
                   value={user?.dateOfBirth}
+                  sx={{
+                    display:
+                      user?.publicInformation && user?.dateOfBirth
+                        ? "block"
+                        : "none",
+                  }}
                   InputProps={{
                     readOnly: true,
                   }}
@@ -111,6 +133,12 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
                   size="small"
                   label="Address"
                   value={user?.address}
+                  sx={{
+                    display:
+                      user?.publicInformation && user?.address
+                        ? "block"
+                        : "none",
+                  }}
                   InputProps={{
                     readOnly: true,
                   }}
@@ -124,17 +152,33 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
                   variant="outlined"
                   size="small"
                   label="Description"
+                  sx={{
+                    display:
+                      user?.publicInformation && user?.description
+                        ? "block"
+                        : "none",
+                  }}
                   value={user?.description}
                   InputProps={{
                     readOnly: true,
                   }}
                 />
               </Box>
+              <Box
+                sx={{
+                  mt: 2,
+                  display: user?.publicInformation ? "none" : "block",
+                }}
+              >
+                <Alert severity="info">
+                  <AlertTitle>{messageResp}</AlertTitle>
+                </Alert>
+              </Box>
             </Box>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 };
 

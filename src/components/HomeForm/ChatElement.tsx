@@ -131,7 +131,7 @@ export const ChatElement: FC<ChatElementProps> = ({
     let content = "";
     switch (objectMessage.messageType) {
       case MESSAGE_TYPE.TEXT:
-        content = slideText(objectMessage.content, 20);
+        content = slideText(objectMessage.content, 15);
         if (conversation.type === GROUP_CONVERSATION) {
           return `${subject}: ${content}`;
         }

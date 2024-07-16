@@ -13,7 +13,7 @@ import {
 import MultiSelectCardList from "./MultiSelectCardList";
 import {
   createGroupConversation,
-  findUserByEmail,
+  findFriendByFullName,
   FriendListParams,
   getFriendList,
 } from "../../services";
@@ -32,13 +32,12 @@ const CreateGroupDialog: FC<CreateGroupDialogProps> = ({
 }) => {
   const { user } = useAuth();
   const [title, setTitle] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [searchResults, setSearchResults] = useState<FriendListParams[]>([]);
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const { handleUploadFile, progressUpload } = useUploadFile(); // Hook để xử lý tải lên tệp
-
-  const [file, setFile] = useState<File | null>(null); // State để lưu trữ tệp hình ảnh đã chọn
+  const { handleUploadFile, progressUpload } = useUploadFile();
+  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (open && user) {
@@ -65,7 +64,7 @@ const CreateGroupDialog: FC<CreateGroupDialogProps> = ({
 
   const handleSearch = () => {
     setLoading(true);
-    findUserByEmail(email)
+    findFriendByFullName(name)
       .then((res) => {
         setSearchResults(res.data);
         setLoading(false);
@@ -81,7 +80,6 @@ const CreateGroupDialog: FC<CreateGroupDialogProps> = ({
       (participant: any) => participant._id
     );
 
-    // Tải lên hình ảnh nếu có
     let uploadedImageUrl = "";
     if (file) {
       const uploadResult = await handleUploadFile(
@@ -95,7 +93,7 @@ const CreateGroupDialog: FC<CreateGroupDialogProps> = ({
 
     const groupData = {
       title: title || conversation?.title || "Group",
-      picture: uploadedImageUrl, // Sử dụng URL hình ảnh đã tải lên
+      picture: uploadedImageUrl,
       participants: [...participantsIds, ...selectedFriends],
     };
     createGroupConversation(groupData)
@@ -121,10 +119,10 @@ const CreateGroupDialog: FC<CreateGroupDialogProps> = ({
       <DialogContent>
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
           <TextField
-            label="Search by Email"
+            label="Search by Name"
             fullWidth
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             sx={{ mr: 2 }}
           />
           <Button onClick={handleSearch} disabled={loading}>
@@ -142,7 +140,7 @@ const CreateGroupDialog: FC<CreateGroupDialogProps> = ({
           <input
             type="file"
             accept=".jpg, .png"
-            onChange={(e) => setFile(e.target.files?.[0] || null)} // Lưu trữ tệp hình ảnh đã chọn
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
             style={{ display: "none" }}
             id="upload-picture-input"
           />

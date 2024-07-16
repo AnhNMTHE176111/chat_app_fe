@@ -119,20 +119,40 @@ export const InputMessage: FC<InputMessageProps> = ({
     recognition.lang = "vi-VN";
     // recognition.lang = "vi-VN" || "ja-JP" || "en-US"; // Đặt ngôn ngữ là tiếng Việt
 
-    recognition.onstart = () => {
-      setIsListening(true);
+    // recognition.onstart = () => {
+    //   setIsListening(true);
+    // };
+
+    let text = "";
+    recognition.onresult = (event: any) => {
+      const current = event.resultIndex;
+      const transcript = event.results[current][0].transcript;
+      if (transcript == "Gửi.") {
+        console.log(
+          "call this 1",
+          text,
+          file != null,
+          message.trim() != "" || file != null
+        );
+        if (text.trim() != "" || file != null) {
+          setIsListening(false);
+          handleSendMessage(text.trim(), file, fileDestination).then(() => {
+            text = "";
+            setMessage("");
+            setFile(null);
+            setFileDestination("");
+          });
+        }
+      } else {
+        text += ` ${transcript}`;
+        setMessage((prev) => `${prev} ${transcript}`.trim());
+      }
     };
 
     recognition.onend = () => {
       if (isListening) {
         recognition.start();
       }
-    };
-
-    recognition.onresult = (event: any) => {
-      const current = event.resultIndex;
-      const transcript = event.results[current][0].transcript;
-      setMessage((prev) => `${prev} ${transcript}`);
     };
 
     if (isListening) {

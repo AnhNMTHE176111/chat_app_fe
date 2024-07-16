@@ -25,6 +25,7 @@ import {
   GenderInput,
   PhoneInput,
   ProfileCard,
+  PublicInformationChecked,
 } from "../../../components";
 import { Email } from "@mui/icons-material";
 import { showNotificationAction } from "../../../stores/notificationActionSlice";
@@ -45,6 +46,7 @@ export const Profile = () => {
         gender: "",
         description: "",
         background: "",
+        publicInformation: false,
       },
     });
 
@@ -75,6 +77,7 @@ export const Profile = () => {
     if (user?.id) {
       changeInformation(user.id, data)
         .then(async (res) => {
+          console.log(res);
           if (res.success) {
             try {
               const response = await getCurrentUser();
@@ -193,6 +196,12 @@ export const Profile = () => {
                       control={control}
                       name={"background"}
                       title="Choose Background Picture"
+                    />
+                  </Box>
+                  <Box display="flex" flexDirection="row" gap={2} mb={2}>
+                    <PublicInformationChecked
+                      control={control}
+                      name={"publicInformation"}
                     />
                   </Box>
                   <Box display="flex" flexDirection="row" gap={2}>
