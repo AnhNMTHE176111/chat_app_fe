@@ -11,6 +11,7 @@ export interface ChatContainerProps {
   setLatestMessage: any;
   conversations: any;
   setConversations: any;
+  onClick?: () => void;
 }
 
 export const MessageContext = createContext<any>(null);

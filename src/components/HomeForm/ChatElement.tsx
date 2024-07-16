@@ -22,9 +22,14 @@ const StyledChatBox = styled(Box)(({ theme }) => ({
 interface ChatElementProps {
   data: any;
   latestMessage: any;
+  onClick?: () => void;
 }
 
-export const ChatElement: FC<ChatElementProps> = ({ data, latestMessage }) => {
+export const ChatElement: FC<ChatElementProps> = ({
+  data,
+  latestMessage,
+  onClick,
+}) => {
   /** Gloabl Variable */
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -101,6 +106,9 @@ export const ChatElement: FC<ChatElementProps> = ({ data, latestMessage }) => {
   }, [onlineUsers]);
 
   const handleSelectConversation = () => {
+    if (onClick) {
+      onClick();
+    }
     navigate(`/chat/${conversation._id}`, {
       state: {
         conversation: conversation,
@@ -123,7 +131,7 @@ export const ChatElement: FC<ChatElementProps> = ({ data, latestMessage }) => {
     let content = "";
     switch (objectMessage.messageType) {
       case MESSAGE_TYPE.TEXT:
-        content = slideText(objectMessage.content, 20);
+        content = slideText(objectMessage.content, 15);
         if (conversation.type === GROUP_CONVERSATION) {
           return `${subject}: ${content}`;
         }

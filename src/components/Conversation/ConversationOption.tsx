@@ -8,6 +8,7 @@ import {
   ImageList,
   ImageListItem,
   List,
+  ListItem,
   ListItemAvatar,
   ListItemButton,
   ListItemIcon,
@@ -34,7 +35,7 @@ import {
   // kickMemberFromConversation,
 } from "../../services";
 import { useAuth, useMessage } from "../../hooks";
-import { MESSAGE_TYPE } from "../../constants";
+import { GROUP_CONVERSATION, MESSAGE_TYPE } from "../../constants";
 import CreateGroupDialog from "./CreateGroupDialog";
 import MemberListDialog from "./MemberListDialog";
 import { Group } from "@mui/icons-material";
@@ -248,6 +249,27 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
                   </ListItemButton>
                 </Paper>
                 <Divider />
+              </List>
+            </Box>
+            <Box sx={{ width: "100%" }}>
+              <Typography>
+                {conversation.type == GROUP_CONVERSATION
+                  ? "Group Members"
+                  : "Members"}
+              </Typography>
+              <List>
+                {conversation.participants.map((item: any, index: any) => (
+                  <ListItem key={index}>
+                    <ListItemAvatar>
+                      <AvatarOnline
+                        srcImage={item.avatar}
+                        isOnline={false}
+                        title={item.fullName}
+                      />
+                    </ListItemAvatar>
+                    <ListItemText primary={item.fullName} />
+                  </ListItem>
+                ))}
               </List>
             </Box>
           </Box>

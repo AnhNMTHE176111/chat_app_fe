@@ -10,12 +10,14 @@ interface HistoryChatProps {
   conversations: any;
   setConversations: any;
   latestMessage: any;
+  onClick?: () => void;
 }
 
 export const HistoryChat: FC<HistoryChatProps> = ({
   conversations,
   setConversations,
   latestMessage,
+  onClick,
 }) => {
   const { control } = useForm<SearchParams>();
   const {} = useMessage();
@@ -73,6 +75,7 @@ export const HistoryChat: FC<HistoryChatProps> = ({
             key={value._id}
             data={value}
             latestMessage={latestMessage}
+            onClick={onClick}
           />
         ))}
       </List>

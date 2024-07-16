@@ -1,10 +1,12 @@
 import {
-  Alert,
   Box,
   IconButton,
   ListItemText,
-  Snackbar,
   Tooltip,
+  Snackbar,
+  useMediaQuery,
+  useTheme,
+  Alert,
 } from "@mui/material";
 import React, { FC, useState } from "react";
 import { AvatarOnline } from "../HomeForm";
@@ -14,7 +16,12 @@ import CallIcon from "@mui/icons-material/Call";
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
 import ViewSidebarOutlinedIcon from "@mui/icons-material/ViewSidebarOutlined";
-import { CALL_TYPE } from "../../constants";
+import { CALL_TYPE, GROUP_CONVERSATION } from "../../constants";
+import { addFriendRequest, getFriendById } from "../../services";
+import { HeaderConversationSkeleton } from "../Skeleton";
+import { showNotificationAction } from "../../stores/notificationActionSlice";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import { slideText } from "../../helpers/utils";
 
 interface HeaderConversationProps {
   conversation: any;
@@ -22,6 +29,7 @@ interface HeaderConversationProps {
   statusFriendReceiverId: string;
   handleToggleDrawer: () => void;
   handleAddFriend: () => void;
+  onClick?: () => void;
   open: boolean;
 }
 
@@ -31,8 +39,11 @@ export const HeaderConversation: FC<HeaderConversationProps> = ({
   statusFriendReceiverId,
   handleToggleDrawer,
   handleAddFriend,
+  onClick,
   open,
 }) => {
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const { handleStartCall } = useCall();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
@@ -72,6 +83,11 @@ export const HeaderConversation: FC<HeaderConversationProps> = ({
           alignItems: "center",
         }}
       >
+        <Tooltip title="Back">
+          <IconButton onClick={onClick}>
+            <ArrowBackIosIcon />
+          </IconButton>
+        </Tooltip>
         {conversation && (
           <AvatarOnline
             srcImage={conversation?.picture}
@@ -83,7 +99,7 @@ export const HeaderConversation: FC<HeaderConversationProps> = ({
           sx={{
             marginLeft: "10px",
           }}
-          primary={conversation?.title}
+          primary={isSmallScreen ? slideText(conversation?.title, 10) :  conversation?.title}
           secondary={isOnline ? "Online" : "Offline"}
         />
       </Box>
