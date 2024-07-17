@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -8,16 +8,26 @@ import {
   InputAdornment,
   Divider,
   Button,
+  Badge,
 } from "@mui/material";
 import { PersonAdd, Search } from "@mui/icons-material";
 import FriendList from "./FriendList";
 import FriendRequestList from "./FriendRequestList";
 import AddFriendDialog from "./AddFriendDialog";
+import { useLocation } from "react-router-dom";
 
 export const ContactsPage = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const location = useLocation();
+  const { newRequest } = location.state || false;
+
+  useEffect(() => {
+    if (newRequest) {
+      setTabIndex(1);
+    }
+  }, [newRequest]);
 
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setTabIndex(newValue);

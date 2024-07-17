@@ -8,7 +8,7 @@ import {
   useTheme,
   Alert,
 } from "@mui/material";
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { AvatarOnline } from "../HomeForm";
 import { useCall } from "../../hooks";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
@@ -16,10 +16,17 @@ import CallIcon from "@mui/icons-material/Call";
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
 import ViewSidebarOutlinedIcon from "@mui/icons-material/ViewSidebarOutlined";
-import { CALL_TYPE, GROUP_CONVERSATION } from "../../constants";
+import {
+  CALL_TYPE,
+  FRIEND_STATUS,
+  GROUP_CONVERSATION,
+  SINGLE_CONVERSATION,
+} from "../../constants";
 import { addFriendRequest, getFriendById } from "../../services";
 import { HeaderConversationSkeleton } from "../Skeleton";
 import { showNotificationAction } from "../../stores/notificationActionSlice";
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
+import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import { slideText } from "../../helpers/utils";
 
@@ -45,10 +52,11 @@ export const HeaderConversation: FC<HeaderConversationProps> = ({
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const { handleStartCall } = useCall();
+
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const handleVoiceCall = () => {
-    if (conversation.type === "single" && statusFriendReceiverId !== "accept") {
+    if (isNotFriend || pendingStatusFriend) {
       setSnackbarOpen(true);
       return;
     }
@@ -56,16 +64,45 @@ export const HeaderConversation: FC<HeaderConversationProps> = ({
   };
 
   const handleVideoCall = () => {
-    if (conversation.type === "single" && statusFriendReceiverId !== "accept") {
+    if (isNotFriend || pendingStatusFriend) {
       setSnackbarOpen(true);
       return;
     }
     handleStartCall(conversation, CALL_TYPE.VIDEO);
   };
 
+  const [isFriend, setIsFriend] = useState(
+    conversation?.type === SINGLE_CONVERSATION &&
+      statusFriendReceiverId === FRIEND_STATUS.ACCEPT
+  );
+  const [isNotFriend, setIsNotFriend] = useState(
+    conversation?.type === SINGLE_CONVERSATION &&
+      statusFriendReceiverId === FRIEND_STATUS.REJECT
+  );
+  const [pendingStatusFriend, setPendingStatusFriend] = useState(
+    conversation?.type === SINGLE_CONVERSATION &&
+      statusFriendReceiverId === FRIEND_STATUS.PENDING
+  );
+
+  useEffect(() => {
+    setIsFriend(
+      conversation?.type === SINGLE_CONVERSATION &&
+        statusFriendReceiverId === FRIEND_STATUS.ACCEPT
+    );
+    setIsNotFriend(
+      conversation?.type === SINGLE_CONVERSATION &&
+        statusFriendReceiverId === FRIEND_STATUS.REJECT
+    );
+    setPendingStatusFriend(
+      conversation?.type === SINGLE_CONVERSATION &&
+        statusFriendReceiverId === FRIEND_STATUS.PENDING
+    );
+  }, [statusFriendReceiverId, conversation]);
+
   const showAddFriendIcon =
-    (conversation.type === "single" && statusFriendReceiverId !== "accept") ||
-    conversation.type === "group"
+    (conversation?.type === SINGLE_CONVERSATION &&
+      statusFriendReceiverId !== FRIEND_STATUS.ACCEPT) ||
+    conversation?.type === GROUP_CONVERSATION
       ? true
       : false;
 
@@ -99,18 +136,37 @@ export const HeaderConversation: FC<HeaderConversationProps> = ({
           sx={{
             marginLeft: "10px",
           }}
-          primary={isSmallScreen ? slideText(conversation?.title, 10) :  conversation?.title}
+          primary={
+            isSmallScreen
+              ? slideText(conversation?.title, 10)
+              : conversation?.title
+          }
           secondary={isOnline ? "Online" : "Offline"}
         />
       </Box>
       <Box>
-        {showAddFriendIcon && (
+        {pendingStatusFriend && (
+          <Tooltip title="Request Sent">
+            <IconButton onClick={handleAddFriend}>
+              <PersonRemoveIcon />
+            </IconButton>
+          </Tooltip>
+        )}
+        {conversation?.type === GROUP_CONVERSATION && (
+          <Tooltip title="Add member">
+            <IconButton onClick={handleAddFriend}>
+              <GroupAddIcon />
+            </IconButton>
+          </Tooltip>
+        )}
+        {isNotFriend && !pendingStatusFriend && (
           <Tooltip title="Add Friend">
             <IconButton onClick={handleAddFriend}>
               <PersonAddIcon />
             </IconButton>
           </Tooltip>
         )}
+
         <Tooltip title="Call">
           <IconButton onClick={handleVoiceCall}>
             <CallIcon />

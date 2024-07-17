@@ -4,6 +4,7 @@ import {
   Box,
   Container,
   Divider,
+  Grid,
   IconButton,
   ImageList,
   ImageListItem,
@@ -16,7 +17,10 @@ import {
   Paper,
   Tooltip,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import { AvatarOnline } from "../HomeForm";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SearchIcon from "@mui/icons-material/Search";
@@ -34,7 +38,7 @@ import {
   // updateMemberRole,
   // kickMemberFromConversation,
 } from "../../services";
-import { useAuth, useMessage } from "../../hooks";
+import { useAuth, useDrawerState, useMessage } from "../../hooks";
 import { GROUP_CONVERSATION, MESSAGE_TYPE } from "../../constants";
 import CreateGroupDialog from "./CreateGroupDialog";
 import MemberListDialog from "./MemberListDialog";
@@ -46,6 +50,7 @@ interface ConversationOptionsProps {
   isOnline: boolean;
   id: string | undefined;
   handleOpenPreviewImageDialog: (imageLink: string) => void;
+  handleToggleDrawer?: () => void;
 }
 
 export const ConversationOptions: FC<ConversationOptionsProps> = ({
@@ -54,6 +59,7 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
   isOnline,
   id,
   handleOpenPreviewImageDialog,
+  handleToggleDrawer,
 }) => {
   const { user } = useAuth();
   const [openMedia, setOpenMedia] = useState(false);
@@ -148,6 +154,9 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
     });
   };
 
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <React.Fragment>
       {!openMedia && !openFile && (
@@ -159,6 +168,22 @@ export const ConversationOptions: FC<ConversationOptionsProps> = ({
           }}
         >
           <Box sx={{ ...sxCenterColumnFlex, my: 2, width: "100%" }}>
+            {isSmallScreen && (
+              <Grid
+                container
+                item
+                xs={12}
+                sx={{
+                  height: "10%",
+                }}
+              >
+                <Tooltip title="Back">
+                  <IconButton onClick={handleToggleDrawer}>
+                    <ArrowBackIosIcon />
+                  </IconButton>
+                </Tooltip>
+              </Grid>
+            )}
             {conversation && (
               <AvatarOnline
                 srcImage={conversation?.picture}

@@ -1,17 +1,23 @@
 import {
+  Alert,
+  AlertColor,
+  AlertPropsColorOverrides,
+  Button,
   Container,
   Grid,
   IconButton,
   ListItemText,
+  Snackbar,
   Tooltip,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { FC, useEffect, useRef, useState } from "react";
 import {
   addFriendRequest,
   addFriendToConversation,
+  changeFriendStatus,
   getConversationByID,
   getFriendById,
   getMessagesConversation,
@@ -34,6 +40,7 @@ import {
   useUploadFile,
 } from "../../../hooks";
 import {
+  FRIEND_STATUS,
   GROUP_CONVERSATION,
   MESSAGE_TYPE,
   SOCKET_EVENT,
@@ -42,6 +49,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { ChatContainerProps } from "../../../providers";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import { showNotificationAction } from "../../../stores/notificationActionSlice";
+import { OverridableStringUnion } from "@mui/types";
 
 export const Conversation: FC<ChatContainerProps> = ({
   conversations,
@@ -76,9 +84,19 @@ export const Conversation: FC<ChatContainerProps> = ({
   /** Preview Image */
   const [openPreviewImage, setOpenPreviewImage] = useState<boolean>(false);
   const [previewImageLink, setPreviewImageLink] = useState<string>("");
-
   // Add Friend Dialog State
   const [openAddFriendDialog, setOpenAddFriendDialog] = useState(false);
+  const navigate = useNavigate();
+  const [isNewRequest, setIsNewRequest] = useState(false);
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const [openNoti, setOpenNoti] = useState(false);
+  const [notiMessage, setNotiMessage] = useState("");
+  const [severityNoti, setSeverityNoti] =
+    useState<OverridableStringUnion<AlertColor, AlertPropsColorOverrides>>(
+      "success"
+    );
 
   useEffect(() => {
     if (id) {
@@ -207,7 +225,17 @@ export const Conversation: FC<ChatContainerProps> = ({
 
     socket?.on(SOCKET_EVENT.REACT_MESSAGE, handleReceiveReact);
 
+    socket?.on("friendStatusChanged", (userId: string) => {
+      if (userId !== user?.id) {
+        setOpenNoti(true);
+        setIsNewRequest(true);
+        setNotiMessage(`New friend request`);
+        setSeverityNoti("info");
+      }
+    });
+
     return () => {
+      socket?.off("friendStatusChanged");
       socket?.off(SOCKET_EVENT.REACT_MESSAGE, handleReceiveReact);
     };
   }, [socket, messages]);
@@ -229,105 +257,77 @@ export const Conversation: FC<ChatContainerProps> = ({
       if (conversation?.type === GROUP_CONVERSATION) {
         setOpenAddFriendDialog(true);
       } else {
-        addFriendRequest(user.id, {
-          friendId: receiverId,
-        })
-          .then((res) => {
-            if (res.success) {
-              dispatchNoti(
-                showNotificationAction({
-                  message: "Request sent successfully",
-                  severity: "success",
-                })
-              );
-            }
+        if (statusFriendReceiverId == FRIEND_STATUS.PENDING) {
+          changeFriendStatus(user.id, {
+            friendId: receiverId,
+            status: FRIEND_STATUS.REJECT,
           })
-          .catch((err) => {
-            dispatchNoti(
-              showNotificationAction({
-                message: err?.message?.data?.message || "Something went wrong",
-                severity: "error",
-              })
-            );
-          });
+            .then((res) => {
+              if (res.success) {
+                setStatusFriendReceiverId(FRIEND_STATUS.REJECT);
+                setOpenNoti(true);
+                setIsNewRequest(false);
+                setNotiMessage("Delete Invitation successfully");
+                setSeverityNoti("success");
+              }
+            })
+            .catch((err) => {
+              setOpenNoti(true);
+              setIsNewRequest(false);
+              setNotiMessage(err?.message?.data?.message || "Something wrong");
+              setSeverityNoti("error");
+            });
+        }
+        if (statusFriendReceiverId == FRIEND_STATUS.REJECT) {
+          addFriendRequest(user.id, {
+            friendId: receiverId,
+          })
+            .then((res) => {
+              if (res.success) {
+                setStatusFriendReceiverId(FRIEND_STATUS.PENDING);
+                setOpenNoti(true);
+                setIsNewRequest(false);
+                setNotiMessage("Request sent successfully");
+                setSeverityNoti("success");
+              }
+            })
+            .catch((err) => {
+              setOpenNoti(true);
+              setIsNewRequest(false);
+              setNotiMessage(err?.message?.data?.message || "Something wrong");
+              setSeverityNoti("error");
+            });
+        }
       }
     }
   };
 
-  // const [isFriend, setIsFriend] = useState<boolean>(false);
-  // useEffect(() => {
-  //   if (conversation) {
-  //     if (
-  //       statusFriendReceiverId !== "accept" &&
-  //       conversation.type !== GROUP_CONVERSATION
-  //     ) {
-  //     } else {
-  //       setIsFriend(true);
-  //     }
-  //   }
-  // }, [statusFriendReceiverId, conversation]);
-
-  const handleCall = () => {
-    if (conversation) {
-      if (
-        statusFriendReceiverId !== "accept" &&
-        conversation.type !== GROUP_CONVERSATION
-      ) {
-        dispatchNoti(
-          showNotificationAction({
-            message: "Only friends can use this feature.",
-            severity: "warning",
-          })
-        );
-      } else {
-        window.alert("Call here");
-      }
-    }
+  const handleCloseNoti = () => {
+    setOpenNoti(false);
   };
-
-  const handleVideoCall = () => {
-    if (conversation) {
-      if (
-        statusFriendReceiverId !== "accept" &&
-        conversation.type !== GROUP_CONVERSATION
-      ) {
-        dispatchNoti(
-          showNotificationAction({
-            message: "Only friends can use this feature.",
-            severity: "warning",
-          })
-        );
-      } else {
-        window.alert("Video Call here");
-      }
-    }
-  };
-
-  const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
-  
   const handleAddFriendToConversation = (ListFriend: string[]) => {
     addFriendToConversation(conversation._id, ListFriend)
       .then((res) => {
         if (res.success) {
-          dispatchNoti(
-            showNotificationAction({
-              message: "Add friend successfully",
-              severity: "success",
-            })
-          );
+          setOpenNoti(true);
+          setNotiMessage("Add friend successfully");
+          setSeverityNoti("success");
         }
       })
       .catch((err) => {
-        dispatchNoti(
-          showNotificationAction({
-            message: err?.message?.data?.message || "Something went wrong",
-            severity: "error",
-          })
-        );
+        setOpenNoti(true);
+        setNotiMessage("Something wrong");
+        setSeverityNoti("error");
       });
   };
 
+  const handleNavigateToNewRequest = () => {
+    navigate("/contacts", {
+      state: {
+        newRequest: true,
+      },
+    });
+  };
 
   return (
     <Grid container sx={{ height: "100%" }}>
@@ -568,21 +568,8 @@ export const Conversation: FC<ChatContainerProps> = ({
                 height: "100%",
               }}
             >
-              <Grid
-                container
-                item
-                xs={12}
-                sx={{
-                  height: "10%",
-                }}
-              >
-                <Tooltip title="Back">
-                  <IconButton onClick={handleToggleDrawer}>
-                    <ArrowBackIosIcon />
-                  </IconButton>
-                </Tooltip>
-              </Grid>
               <ConversationOptions
+                handleToggleDrawer={handleToggleDrawer}
                 open={open}
                 conversation={conversation}
                 isOnline={isOnline}
@@ -593,6 +580,26 @@ export const Conversation: FC<ChatContainerProps> = ({
           )}
         </>
       )}
+
+      <Snackbar
+        open={openNoti}
+        autoHideDuration={6000}
+        onClose={handleCloseNoti}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert onClose={handleCloseNoti} severity={severityNoti}>
+          {notiMessage}{" "}
+          {isNewRequest && (
+            <Button
+              color="secondary"
+              size="small"
+              onClick={handleNavigateToNewRequest}
+            >
+              View New Request
+            </Button>
+          )}
+        </Alert>
+      </Snackbar>
 
       {openAddFriendDialog && (
         <AddFriendToConversationDialog

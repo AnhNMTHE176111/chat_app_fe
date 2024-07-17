@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from "react";
-import HomeLayout from "../../../layouts/HomeLayout";
-import { Divider, Drawer, Grid, useMediaQuery, useTheme } from "@mui/material";
+import {
+  Alert,
+  AlertColor,
+  AlertPropsColorOverrides,
+  Button,
+  Divider,
+  Grid,
+  Snackbar,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import HistoryChat from "./HistoryChat";
 import Conversation from "./Conversation";
-import { useParams } from "react-router-dom";
-import { useDrawerState, useMessage } from "../../../hooks";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAuth, useMessage, useSocket } from "../../../hooks";
+import { OverridableStringUnion } from "@mui/types";
 
 export function ChatPage() {
   const theme = useTheme();
   const [showListConversations, setShowListConversations] = useState(true);
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
-
   const { id } = useParams<{ id: string }>();
   const {
     newMessage,
@@ -22,10 +31,7 @@ export function ChatPage() {
     latestMessage,
     setLatestMessage,
   } = useMessage();
-
-  useEffect(() => {
-    console.log("showListConversations", showListConversations);
-  }, [showListConversations]);
+  const { socket } = useSocket();
 
   useEffect(() => {
     if (messages.length > 1) {
@@ -33,6 +39,49 @@ export function ChatPage() {
       setLatestMessage(copiedLatestMessage);
     }
   }, [messages]);
+
+  const { user } = useAuth();
+
+  const [isNewRequest, setIsNewRequest] = useState(false);
+  const [openNoti, setOpenNoti] = useState(false);
+  const [notiMessage, setNotiMessage] = useState("");
+  const [severityNoti, setSeverityNoti] =
+    useState<OverridableStringUnion<AlertColor, AlertPropsColorOverrides>>(
+      "success"
+    );
+  const navigate = useNavigate();
+  const handleCloseNoti = () => {
+    setOpenNoti(false);
+  };
+
+  useEffect(() => {
+    socket?.on("friendStatusChanged", (userId: string) => {
+      if (userId !== user?.id) {
+        setOpenNoti(true);
+        setIsNewRequest(true);
+        setNotiMessage(`New friend request`);
+        setSeverityNoti("info");
+      }
+    });
+
+    return () => {
+      socket?.off("friendStatusChanged");
+    };
+  }, [socket]);
+
+  const handleNavigateToNewRequest = () => {
+    navigate("/contacts", {
+      state: {
+        newRequest: true,
+      },
+    });
+  };
+
+  const action = (
+    <Button color="secondary" size="small" onClick={handleNavigateToNewRequest}>
+      View New Request
+    </Button>
+  );
 
   return (
     <Grid
@@ -113,6 +162,25 @@ export function ChatPage() {
           )}
         </>
       )}
+      <Snackbar
+        open={openNoti}
+        autoHideDuration={6000}
+        onClose={handleCloseNoti}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert onClose={handleCloseNoti} severity={severityNoti}>
+          {notiMessage}{" "}
+          {isNewRequest && (
+            <Button
+              color="secondary"
+              size="small"
+              onClick={handleNavigateToNewRequest}
+            >
+              View New Request
+            </Button>
+          )}
+        </Alert>
+      </Snackbar>
     </Grid>
   );
 }
